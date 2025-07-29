@@ -38,11 +38,13 @@ class AIAnalyzer:
                     print(f"Groq AI failed: {e}")
             
             # If both AI services fail, return basic analysis
-            return self._generate_basic_analysis(stock_data)
+            basic_analysis = self._generate_basic_analysis(stock_data)
+            return {"analysis": basic_analysis, "source": "basic"}
             
         except Exception as e:
             print(f"Error in AI analysis: {e}")
-            return self._generate_basic_analysis(stock_data)
+            basic_analysis = self._generate_basic_analysis(stock_data)
+            return {"analysis": basic_analysis, "source": "basic", "error": str(e)}
     
     def _create_analysis_prompt(self, stock_data: Dict[str, Any]) -> str:
         """Create analysis prompt for AI with safe formatting"""
@@ -197,32 +199,110 @@ class AIAnalyzer:
             
         except Exception as e:
             print(f"Error parsing analysis: {e}")
-            return self._generate_basic_analysis({})
+            basic_analysis = self._generate_basic_analysis({})
+            return {"analysis": basic_analysis, "source": "basic", "error": str(e)}
     
-    def _generate_basic_analysis(self, stock_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Generate basic analysis when AI services are unavailable"""
+    def _generate_basic_analysis(self, stock_data: Dict[str, Any]) -> str:
+        """Generate comprehensive basic analysis when AI services are unavailable"""
         insights = []
         
-        # Generate basic insights based on available data
-        if stock_data.get('pe_ratio'):
-            if stock_data['pe_ratio'] < 15:
-                insights.append("Stock appears to be undervalued based on P/E ratio")
-            elif stock_data['pe_ratio'] > 25:
-                insights.append("Stock appears to be overvalued based on P/E ratio")
+        company_name = stock_data.get('company_name', 'the company')
+        current_price = stock_data.get('current_price', 0)
+        
+        # Generate insightful analysis based on available financial metrics
+        
+        # Valuation Analysis
+        pe_ratio = stock_data.get('pe_ratio')
+        if pe_ratio and isinstance(pe_ratio, (int, float)):
+            if pe_ratio < 15:
+                insights.append(f"Stock appears undervalued with P/E ratio of {pe_ratio:.1f}, below market average")
+            elif pe_ratio > 30:
+                insights.append(f"Stock trades at premium valuation with P/E ratio of {pe_ratio:.1f}")
             else:
-                insights.append("Stock is reasonably valued based on P/E ratio")
+                insights.append(f"Stock shows reasonable valuation with P/E ratio of {pe_ratio:.1f}")
         
-        if stock_data.get('roe') and stock_data['roe'] > 15:
-            insights.append("Strong Return on Equity indicates efficient management")
+        # Profitability Analysis
+        roe = stock_data.get('roe')
+        if roe and isinstance(roe, (int, float)):
+            if roe > 15:
+                insights.append(f"Excellent Return on Equity of {roe:.1f}% demonstrates strong profitability")
+            elif roe < 10:
+                insights.append(f"ROE of {roe:.1f}% suggests room for improvement in profitability")
+            else:
+                insights.append(f"Moderate ROE of {roe:.1f}% indicates stable returns")
         
-        if stock_data.get('debt_to_equity') and stock_data['debt_to_equity'] < 0.5:
-            insights.append("Low debt-to-equity ratio suggests conservative financial management")
+        # Financial Health
+        debt_to_equity = stock_data.get('debt_to_equity')
+        if debt_to_equity and isinstance(debt_to_equity, (int, float)):
+            if debt_to_equity < 0.3:
+                insights.append(f"Conservative debt management with D/E ratio of {debt_to_equity:.2f}")
+            elif debt_to_equity > 1.0:
+                insights.append(f"High leverage with D/E ratio of {debt_to_equity:.2f} requires monitoring")
+            else:
+                insights.append(f"Balanced capital structure with D/E ratio of {debt_to_equity:.2f}")
         
-        if stock_data.get('dividend_yield') and stock_data['dividend_yield'] > 2:
-            insights.append("Decent dividend yield provides income potential")
+        # Growth Analysis
+        revenue_growth = stock_data.get('revenue_growth')
+        if revenue_growth and isinstance(revenue_growth, (int, float)):
+            if revenue_growth > 15:
+                insights.append(f"Strong revenue growth of {revenue_growth:.1f}% indicates business expansion")
+            elif revenue_growth < 0:
+                insights.append(f"Negative revenue growth of {revenue_growth:.1f}% shows business challenges")
+            else:
+                insights.append(f"Moderate revenue growth of {revenue_growth:.1f}% suggests steady business")
         
-        if stock_data.get('current_ratio') and stock_data['current_ratio'] > 1.5:
-            insights.append("Strong current ratio indicates good liquidity position")
+        # Market Performance
+        high_52w = stock_data.get('fifty_two_week_high')
+        low_52w = stock_data.get('fifty_two_week_low')
+        if current_price and high_52w and low_52w:
+            perf_vs_high = ((current_price / high_52w) - 1) * 100
+            if perf_vs_high > -10:
+                insights.append(f"Trading near 52-week high suggests strong market sentiment")
+            elif perf_vs_high < -30:
+                insights.append(f"Trading significantly below 52-week high may present opportunity")
+        
+        # Dividend Analysis
+        dividend_yield = stock_data.get('dividend_yield')
+        if dividend_yield and isinstance(dividend_yield, (int, float)) and dividend_yield > 0:
+            if dividend_yield > 3:
+                insights.append(f"Attractive dividend yield of {dividend_yield:.1f}% provides steady income")
+            else:
+                insights.append(f"Dividend yield of {dividend_yield:.1f}% offers modest income")
+        
+        # Ensure we have insights
+        if not insights:
+            insights = [
+                f"Currently analyzing {company_name} financial data",
+                f"Stock trading at ₹{current_price:.2f}" if current_price else "Price data available",
+                f"Sector: {stock_data.get('sector', 'Information not available')}",
+                "Comprehensive analysis requires additional data points"
+            ]
+        
+        # Create summary
+        if len(insights) >= 3:
+            investment_summary = f"Based on available metrics, {company_name} shows mixed fundamentals. "
+            if any("strong" in insight.lower() or "excellent" in insight.lower() for insight in insights):
+                investment_summary += "Several positive indicators suggest potential investment merit. "
+            if any("concern" in insight.lower() or "negative" in insight.lower() for insight in insights):
+                investment_summary += "Some areas require careful monitoring before investment decisions. "
+            investment_summary += "Comprehensive analysis recommended with additional research."
+        else:
+            investment_summary = f"Limited data available for {company_name}. Additional research recommended for investment decisions."
+        
+        # Format the response
+        formatted_insights = "\n".join([f"• {insight}" for insight in insights[:6]])  # Limit to 6 insights
+        
+        analysis = f"""**📊 STOCK ANALYSIS: {company_name.upper()}**
+
+**Key Insights:**
+{formatted_insights}
+
+**Investment Summary:**
+{investment_summary}
+
+*Note: This analysis is based on available financial data. For investment decisions, consider consulting with a financial advisor and conducting additional research.*"""
+        
+        return analysis
         
         # Default insights if none generated
         if not insights:

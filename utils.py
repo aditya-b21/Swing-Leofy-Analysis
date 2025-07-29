@@ -35,31 +35,46 @@ def validate_stock_symbol(user_input: str) -> Optional[str]:
     return None
 
 def format_currency(amount):
-    """Format currency values for display"""
+    """Format currency values for display with enhanced validation"""
     if amount is None or pd.isna(amount):
         return "N/A"
     
     try:
         amount = float(amount)
+        
+        # Handle negative values
+        if amount < 0:
+            return f"-₹{abs(amount):.2f}"
+            
+        # Handle very large amounts (> 1 crore)
         if amount >= 10000000:  # 1 crore
             return f"₹{amount/10000000:.2f} Cr"
         elif amount >= 100000:  # 1 lakh
             return f"₹{amount/100000:.2f} L"
         elif amount >= 1000:
             return f"₹{amount/1000:.2f} K"
-        else:
+        elif amount >= 1:
             return f"₹{amount:.2f}"
-    except (ValueError, TypeError):
+        else:
+            # For very small amounts
+            return f"₹{amount:.4f}"
+    except (ValueError, TypeError, OverflowError):
         return "N/A"
 
 def format_percentage(value):
-    """Format percentage values for display"""
+    """Format percentage values for display with enhanced validation"""
     if value is None or pd.isna(value):
         return "N/A"
     
     try:
-        return f"{float(value):.2f}%"
-    except (ValueError, TypeError):
+        percentage = float(value)
+        
+        # Handle very small percentages
+        if abs(percentage) < 0.01 and percentage != 0:
+            return f"{percentage:.4f}%"
+        else:
+            return f"{percentage:.2f}%"
+    except (ValueError, TypeError, OverflowError):
         return "N/A"
 
 def format_ratio(value):

@@ -113,82 +113,161 @@ def display_stock_overview(stock_data):
         )
 
 def display_detailed_analysis(stock_data):
-    """Display detailed stock analysis in tabs"""
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 Key Metrics", "💰 Financials", "📈 Performance", "🏢 Company Info"])
+    """Display detailed stock analysis in organized tabs"""
+    # Create cleaner tab structure
+    tab1, tab2, tab3 = st.tabs(["📊 Financial Metrics", "📈 Market Data", "🏢 Company Profile"])
     
     with tab1:
+        st.subheader("📊 Key Financial Ratios")
+        
+        # Create three columns for better organization
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("**💰 Valuation Ratios**")
+            valuation_metrics = [
+                ("P/E Ratio", stock_data.get('pe_ratio', 'N/A')),
+                ("P/B Ratio", stock_data.get('pb_ratio', 'N/A')),
+                ("EPS", format_currency(stock_data.get('eps'))),
+                ("Book Value", format_currency(stock_data.get('book_value'))),
+                ("Price/Sales", stock_data.get('price_to_sales', 'N/A'))
+            ]
+            for metric, value in valuation_metrics:
+                st.metric(metric, value)
+        
+        with col2:
+            st.markdown("**💪 Financial Health**")
+            health_metrics = [
+                ("Current Ratio", stock_data.get('current_ratio', 'N/A')),
+                ("Quick Ratio", stock_data.get('quick_ratio', 'N/A')),
+                ("Debt to Equity", stock_data.get('debt_to_equity', 'N/A')),
+                ("ROE", format_percentage(stock_data.get('roe'))),
+                ("ROA", format_percentage(stock_data.get('roa')))
+            ]
+            for metric, value in health_metrics:
+                st.metric(metric, value)
+        
+        with col3:
+            st.markdown("**📈 Growth & Margins**")
+            growth_metrics = [
+                ("Revenue Growth", format_percentage(stock_data.get('revenue_growth'))),
+                ("Earnings Growth", format_percentage(stock_data.get('earnings_growth'))),
+                ("Profit Margins", format_percentage(stock_data.get('profit_margins'))),
+                ("Operating Margins", format_percentage(stock_data.get('operating_margins'))),
+                ("Dividend Yield", format_percentage(stock_data.get('dividend_yield')))
+            ]
+            for metric, value in growth_metrics:
+                st.metric(metric, value)
+        
+        # Financial Data Tables
+        st.markdown("---")
+        st.subheader("📋 Financial Statements")
+        
         col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("Valuation Metrics")
-            metrics_data = {
-                "P/E Ratio": stock_data.get('pe_ratio', 'N/A'),
-                "P/B Ratio": stock_data.get('pb_ratio', 'N/A'),
-                "EPS": format_currency(stock_data.get('eps')),
-                "Book Value": format_currency(stock_data.get('book_value')),
-                "Dividend Yield": format_percentage(stock_data.get('dividend_yield'))
-            }
-            for metric, value in metrics_data.items():
-                st.write(f"**{metric}:** {value}")
-        
-        with col2:
-            st.subheader("Financial Health")
-            health_data = {
-                "Current Ratio": stock_data.get('current_ratio', 'N/A'),
-                "Quick Ratio": stock_data.get('quick_ratio', 'N/A'),
-                "Debt to Equity": stock_data.get('debt_to_equity', 'N/A'),
-                "ROE": format_percentage(stock_data.get('roe')),
-                "ROA": format_percentage(stock_data.get('roa'))
-            }
-            for metric, value in health_data.items():
-                st.write(f"**{metric}:** {value}")
-    
-    with tab2:
-        st.subheader("Financial Performance")
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.write("**Revenue Growth:** " + format_percentage(stock_data.get('revenue_growth')))
-            st.write("**Earnings Growth:** " + format_percentage(stock_data.get('earnings_growth')))
-            st.write("**Profit Margins:** " + format_percentage(stock_data.get('profit_margins')))
-            st.write("**Operating Margins:** " + format_percentage(stock_data.get('operating_margins')))
-        
-        with col2:
-            # Display annual financial data if available
             annual_data = stock_data.get('annual_data')
             if annual_data is not None and not annual_data.empty:
-                st.write("**Recent Annual Performance**")
+                st.markdown("**Annual Performance (Last 3 Years)**")
                 st.dataframe(annual_data.head(3), use_container_width=True)
+            else:
+                st.info("Annual financial data not available")
+        
+        with col2:
+            quarterly_data = stock_data.get('quarterly_data')
+            if quarterly_data is not None and not quarterly_data.empty:
+                st.markdown("**Quarterly Performance (Recent)**")
+                st.dataframe(quarterly_data.head(4), use_container_width=True)
+            else:
+                st.info("Quarterly financial data not available")
+    
+    with tab2:
+        st.subheader("📈 Market Performance & Trading Data")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**📊 Price Performance**")
+            price_data = [
+                ("52-Week High", format_currency(stock_data.get('fifty_two_week_high'))),
+                ("52-Week Low", format_currency(stock_data.get('fifty_two_week_low'))),
+                ("Average Volume", f"{stock_data.get('average_volume', 'N/A'):,}" if stock_data.get('average_volume') else 'N/A'),
+                ("Market Cap", format_currency(stock_data.get('market_cap')))
+            ]
+            for metric, value in price_data:
+                st.metric(metric, value)
+            
+            # Calculate performance vs 52W high/low
+            current_price = stock_data.get('current_price', 0)
+            high_52w = stock_data.get('fifty_two_week_high', 1)
+            low_52w = stock_data.get('fifty_two_week_low', 1)
+            
+            if current_price and high_52w and low_52w:
+                perf_vs_high = ((current_price / high_52w) - 1) * 100
+                perf_vs_low = ((current_price / low_52w) - 1) * 100
+                st.metric("Performance vs 52W High", format_percentage(perf_vs_high))
+                st.metric("Performance vs 52W Low", format_percentage(perf_vs_low))
+        
+        with col2:
+            st.markdown("**👥 Shareholding Pattern**")
+            shareholding_data = [
+                ("Promoter Holding", format_percentage(stock_data.get('promoter_holding'))),
+                ("FII Holding", format_percentage(stock_data.get('fii_holding'))),
+                ("DII Holding", format_percentage(stock_data.get('dii_holding'))),
+                ("Retail Holding", format_percentage(stock_data.get('retail_holding')))
+            ]
+            
+            for holder, percentage in shareholding_data:
+                st.metric(holder, percentage)
+            
+            # Additional market data
+            st.markdown("**📊 Additional Market Data**")
+            additional_data = [
+                ("Beta", stock_data.get('beta', 'N/A')),
+                ("Float Shares", f"{stock_data.get('float_shares', 'N/A'):,}" if stock_data.get('float_shares') else 'N/A'),
+                ("Shares Outstanding", f"{stock_data.get('shares_outstanding', 'N/A'):,}" if stock_data.get('shares_outstanding') else 'N/A')
+            ]
+            for metric, value in additional_data:
+                st.metric(metric, value)
     
     with tab3:
-        st.subheader("Shareholding Pattern")
-        shareholding_data = {
-            "Promoter Holding": format_percentage(stock_data.get('promoter_holding')),
-            "FII Holding": format_percentage(stock_data.get('fii_holding')),
-            "DII Holding": format_percentage(stock_data.get('dii_holding')),
-            "Retail Holding": format_percentage(stock_data.get('retail_holding'))
-        }
+        st.subheader("🏢 Company Information")
         
-        for holder, percentage in shareholding_data.items():
-            st.write(f"**{holder}:** {percentage}")
+        col1, col2 = st.columns(2)
         
-        # 52-week performance
-        st.subheader("52-Week Performance")
-        st.write(f"**High:** {format_currency(stock_data.get('fifty_two_week_high'))}")
-        st.write(f"**Low:** {format_currency(stock_data.get('fifty_two_week_low'))}")
-        st.write(f"**Current vs 52W High:** {format_percentage(((stock_data.get('current_price', 0) / stock_data.get('fifty_two_week_high', 1)) - 1) * 100)}")
-    
-    with tab4:
-        st.subheader("Company Information")
-        st.write(f"**Company:** {stock_data.get('company_name', 'N/A')}")
-        st.write(f"**Sector:** {stock_data.get('sector', 'N/A')}")
-        st.write(f"**Industry:** {stock_data.get('industry', 'N/A')}")
-        st.write(f"**Employees:** {stock_data.get('employees', 'N/A')}")
+        with col1:
+            st.markdown("**🏭 Basic Information**")
+            company_info = [
+                ("Company Name", stock_data.get('company_name', 'N/A')),
+                ("Stock Symbol", stock_data.get('symbol', 'N/A')),
+                ("Sector", stock_data.get('sector', 'N/A')),
+                ("Industry", stock_data.get('industry', 'N/A')),
+                ("Country", stock_data.get('country', 'India')),
+                ("Full-time Employees", f"{stock_data.get('employees', 'N/A'):,}" if stock_data.get('employees') else 'N/A')
+            ]
+            
+            for label, value in company_info:
+                st.write(f"**{label}:** {value}")
         
+        with col2:
+            st.markdown("**🌐 Additional Details**")
+            website = stock_data.get('website', 'N/A')
+            if website != 'N/A':
+                st.write(f"**Website:** [Visit Company Website]({website})")
+            else:
+                st.write("**Website:** N/A")
+            
+            last_updated = stock_data.get('last_updated', 'N/A')
+            st.write(f"**Data Last Updated:** {last_updated}")
+        
+        # Business Summary
         business_summary = stock_data.get('business_summary', 'N/A')
         if business_summary != 'N/A' and len(business_summary) > 10:
-            st.subheader("Business Summary")
+            st.markdown("---")
+            st.subheader("📝 Business Summary")
             st.write(business_summary)
+        else:
+            st.info("Business summary not available for this company.")
 
 def process_stock_query(user_input, data_fetcher, ai_analyzer):
     """Process user stock query and return analysis"""
@@ -209,7 +288,13 @@ def process_stock_query(user_input, data_fetcher, ai_analyzer):
         
         # Generate AI analysis
         with st.spinner("Generating AI analysis..."):
-            analysis = ai_analyzer.analyze_stock(stock_data)
+            analysis_result = ai_analyzer.analyze_stock(stock_data)
+            
+            # Handle both string and dict analysis results
+            if isinstance(analysis_result, dict):
+                analysis = analysis_result.get('analysis', 'Analysis completed successfully')
+            else:
+                analysis = analysis_result
         
         return stock_data, analysis
         
