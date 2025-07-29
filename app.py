@@ -4,6 +4,7 @@ from datetime import datetime
 import os
 from stock_data import StockDataFetcher
 from ai_analysis import AIAnalyzer
+from gemini_analysis import GeminiStockAnalyzer
 from utils import format_currency, format_percentage, validate_stock_symbol
 
 # Page configuration
@@ -68,10 +69,11 @@ def initialize_services():
     try:
         data_fetcher = StockDataFetcher()
         ai_analyzer = AIAnalyzer()
-        return data_fetcher, ai_analyzer
+        gemini_analyzer = GeminiStockAnalyzer()
+        return data_fetcher, ai_analyzer, gemini_analyzer
     except Exception as e:
         st.error(f"Error initializing services: {str(e)}")
-        return None, None
+        return None, None, None
 
 # Initialize session state
 def initialize_session_state():
@@ -112,10 +114,16 @@ def display_stock_overview(stock_data):
             f"{format_currency(stock_data.get('fifty_two_week_high'))} / {format_currency(stock_data.get('fifty_two_week_low'))}"
         )
 
-def display_detailed_analysis(stock_data):
+def display_detailed_analysis(stock_data, gemini_analysis=None):
     """Display detailed stock analysis in organized tabs"""
-    # Create cleaner tab structure
-    tab1, tab2, tab3 = st.tabs(["📊 Financial Metrics", "📈 Market Data", "🏢 Company Profile"])
+    # Create enhanced tab structure with detailed analysis and summary
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        "📊 Financial Metrics", 
+        "📈 Market Data", 
+        "🏢 Company Profile",
+        "🤖 Detailed Analysis",
+        "📋 Summary & Insights"
+    ])
     
     with tab1:
         st.subheader("📊 Key Financial Ratios")
@@ -268,40 +276,201 @@ def display_detailed_analysis(stock_data):
             st.write(business_summary)
         else:
             st.info("Business summary not available for this company.")
-
-def process_stock_query(user_input, data_fetcher, ai_analyzer):
-    """Process user stock query and return analysis"""
-    try:
-        # Extract stock symbol from user input
-        stock_symbol = None
-        user_input_upper = user_input.upper()
+    
+    with tab4:
+        st.subheader("🤖 Detailed AI Analysis")
         
+        if gemini_analysis:
+            # Display detailed analysis from Gemini
+            if gemini_analysis.get('detailed_analysis'):
+                st.markdown("### 📖 Comprehensive Analysis")
+                st.write(gemini_analysis['detailed_analysis'])
+            
+            # Quarterly Financial Ratios Table
+            st.markdown("---")
+            st.subheader("📊 Quarterly Financial Ratios (Last 10 Quarters)")
+            
+            quarterly_data = stock_data.get('quarterly_data')
+            if quarterly_data is not None and not quarterly_data.empty and 'Quarter' in quarterly_data.columns:
+                # Create a focused table with key financial ratios
+                display_columns = ['Quarter', 'EPS', 'ROA (%)', 'Net Margin (%)', 'Current Ratio', 'Debt to Equity', 'PE Ratio']
+                available_columns = [col for col in display_columns if col in quarterly_data.columns]
+                
+                if available_columns:
+                    # Format the data for better display
+                    formatted_data = quarterly_data[available_columns].copy()
+                    
+                    # Round numerical values for better display
+                    for col in formatted_data.columns:
+                        if col != 'Quarter' and pd.api.types.is_numeric_dtype(formatted_data[col]):
+                            formatted_data[col] = formatted_data[col].round(2)
+                    
+                    st.dataframe(
+                        formatted_data,
+                        use_container_width=True,
+                        hide_index=True
+                    )
+                    
+                    # Add trend analysis
+                    st.markdown("### 📈 Trend Analysis")
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        if 'EPS' in quarterly_data.columns:
+                            eps_data = quarterly_data['EPS'].dropna()
+                            if len(eps_data) >= 2:
+                                eps_trend = "Improving" if eps_data.iloc[0] > eps_data.iloc[-1] else "Declining"
+                                st.metric("EPS Trend", eps_trend, f"Latest: {eps_data.iloc[0]:.2f}" if not pd.isna(eps_data.iloc[0]) else "N/A")
+                        
+                        if 'ROA (%)' in quarterly_data.columns:
+                            roa_data = quarterly_data['ROA (%)'].dropna()
+                            if len(roa_data) >= 2:
+                                roa_trend = "Improving" if roa_data.iloc[0] > roa_data.iloc[-1] else "Declining"
+                                st.metric("ROA Trend", roa_trend, f"Latest: {roa_data.iloc[0]:.2f}%" if not pd.isna(roa_data.iloc[0]) else "N/A")
+                    
+                    with col2:
+                        if 'Current Ratio' in quarterly_data.columns:
+                            cr_data = quarterly_data['Current Ratio'].dropna()
+                            if len(cr_data) >= 2:
+                                cr_trend = "Improving" if cr_data.iloc[0] > cr_data.iloc[-1] else "Declining"
+                                st.metric("Liquidity Trend", cr_trend, f"Latest: {cr_data.iloc[0]:.2f}" if not pd.isna(cr_data.iloc[0]) else "N/A")
+                        
+                        if 'Debt to Equity' in quarterly_data.columns:
+                            de_data = quarterly_data['Debt to Equity'].dropna()
+                            if len(de_data) >= 2:
+                                de_trend = "Improving" if de_data.iloc[0] < de_data.iloc[-1] else "Worsening"  # Lower is better for D/E
+                                st.metric("Leverage Trend", de_trend, f"Latest: {de_data.iloc[0]:.2f}" if not pd.isna(de_data.iloc[0]) else "N/A")
+                else:
+                    st.info("Quarterly financial ratio data is being processed...")
+            else:
+                st.info("Quarterly financial data not available for detailed analysis.")
+        else:
+            st.info("Generating detailed analysis...")
+    
+    with tab5:
+        st.subheader("📋 Investment Summary & Key Insights")
+        
+        if gemini_analysis:
+            # Key Insights Section
+            st.markdown("### 🔍 Key Insights")
+            insights = gemini_analysis.get('key_insights', [])
+            if insights:
+                for i, insight in enumerate(insights, 1):
+                    st.markdown(f"**{i}.** {insight}")
+            else:
+                st.info("Key insights are being generated...")
+            
+            st.markdown("---")
+            
+            # Investor Implications Section
+            st.markdown("### 💼 Implications for Investors")
+            implications = gemini_analysis.get('investor_implications', '')
+            if implications:
+                st.markdown(implications)
+            else:
+                st.info("Investment implications are being analyzed...")
+            
+            st.markdown("---")
+            
+            # Quick Financial Health Summary
+            st.markdown("### 📊 Financial Health Summary")
+            
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.markdown("**🏛️ Valuation**")
+                pe_ratio = stock_data.get('pe_ratio')
+                if pe_ratio:
+                    if pe_ratio < 15:
+                        st.success(f"P/E: {pe_ratio:.1f} (Attractive)")
+                    elif pe_ratio > 25:
+                        st.warning(f"P/E: {pe_ratio:.1f} (Expensive)")
+                    else:
+                        st.info(f"P/E: {pe_ratio:.1f} (Fair)")
+                else:
+                    st.info("P/E: N/A")
+            
+            with col2:
+                st.markdown("**💪 Financial Health**")
+                debt_equity = stock_data.get('debt_to_equity')
+                if debt_equity:
+                    if debt_equity < 0.5:
+                        st.success(f"D/E: {debt_equity:.2f} (Strong)")
+                    elif debt_equity > 1.0:
+                        st.warning(f"D/E: {debt_equity:.2f} (High Risk)")
+                    else:
+                        st.info(f"D/E: {debt_equity:.2f} (Moderate)")
+                else:
+                    st.info("D/E: N/A")
+            
+            with col3:
+                st.markdown("**📈 Profitability**")
+                roe = stock_data.get('roe')
+                if roe:
+                    if roe > 15:
+                        st.success(f"ROE: {roe:.1f}% (Excellent)")
+                    elif roe < 10:
+                        st.warning(f"ROE: {roe:.1f}% (Poor)")
+                    else:
+                        st.info(f"ROE: {roe:.1f}% (Good)")
+                else:
+                    st.info("ROE: N/A")
+            
+            # Analysis source info
+            st.markdown("---")
+            source = gemini_analysis.get('analysis_source', 'unknown')
+            if source == 'gemini':
+                st.success("✨ Analysis powered by Google Gemini AI")
+            else:
+                st.info("📊 Analysis based on financial data")
+        else:
+            st.info("📊 Comprehensive summary is being generated...")
+            
+            # Show basic metrics while waiting
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric("Current Price", format_currency(stock_data.get('current_price')))
+            with col2:
+                st.metric("Market Cap", format_currency(stock_data.get('market_cap')))
+            with col3:
+                st.metric("P/E Ratio", stock_data.get('pe_ratio', 'N/A'))
+            with col4:
+                st.metric("ROE", format_percentage(stock_data.get('roe')))
+
+def process_stock_query(user_input, data_fetcher, ai_analyzer, gemini_analyzer):
+    """Process user stock query and return comprehensive analysis"""
+    try:
         # Extract stock symbol using validation function
         stock_symbol = validate_stock_symbol(user_input)
         
         if not stock_symbol:
-            return None, "Please provide a valid stock symbol (e.g., TCS, RELIANCE, INFY)"
+            return None, None, "Please provide a valid stock symbol (e.g., TCS, RELIANCE, INFY)"
         
         # Fetch stock data
-        with st.spinner(f"Fetching data for {stock_symbol}..."):
+        with st.spinner(f"Fetching comprehensive data for {stock_symbol}..."):
             stock_data = data_fetcher.get_comprehensive_data(stock_symbol)
         
-        # Generate AI analysis
-        with st.spinner("Generating AI analysis..."):
+        # Generate Gemini analysis
+        with st.spinner("Generating detailed AI analysis with Google Gemini..."):
+            gemini_analysis = gemini_analyzer.analyze_stock_comprehensive(stock_data)
+        
+        # Generate basic analysis as fallback
+        with st.spinner("Generating additional insights..."):
             analysis_result = ai_analyzer.analyze_stock(stock_data)
             
             # Handle both string and dict analysis results
             if isinstance(analysis_result, dict):
-                analysis = analysis_result.get('analysis', 'Analysis completed successfully')
+                basic_analysis = analysis_result.get('analysis', 'Analysis completed successfully')
             else:
-                analysis = analysis_result
+                basic_analysis = analysis_result
         
-        return stock_data, analysis
+        return stock_data, gemini_analysis, basic_analysis
         
     except Exception as e:
-        return None, f"Error analyzing stock: {str(e)}"
+        return None, None, f"Error analyzing stock: {str(e)}"
 
-def display_chat_message(role, content, stock_data=None):
+def display_chat_message(role, content, stock_data=None, gemini_analysis=None):
     """Display a chat message with proper styling"""
     if role == "user":
         st.markdown(f'<div class="chat-message user-message"><strong>You:</strong> {content}</div>', unsafe_allow_html=True)
@@ -313,7 +482,7 @@ def display_chat_message(role, content, stock_data=None):
             st.markdown("---")
             display_stock_overview(stock_data)
             st.markdown("---")
-            display_detailed_analysis(stock_data)
+            display_detailed_analysis(stock_data, gemini_analysis)
 
 def main():
     """Main application function"""
@@ -321,9 +490,9 @@ def main():
     initialize_session_state()
     
     # Initialize services
-    data_fetcher, ai_analyzer = initialize_services()
+    data_fetcher, ai_analyzer, gemini_analyzer = initialize_services()
     
-    if not data_fetcher or not ai_analyzer:
+    if not data_fetcher or not ai_analyzer or not gemini_analyzer:
         st.error("Failed to initialize services. Please check your configuration and try again.")
         return
     
@@ -339,7 +508,8 @@ def main():
         display_chat_message(
             message["role"], 
             message["content"], 
-            message.get("stock_data")
+            message.get("stock_data"),
+            message.get("gemini_analysis")
         )
     
     # User input
@@ -350,24 +520,37 @@ def main():
         st.session_state.chat_history.append({"role": "user", "content": user_input})
         
         # Process the query
-        stock_data, analysis = process_stock_query(user_input, data_fetcher, ai_analyzer)
+        stock_data, gemini_analysis, basic_analysis = process_stock_query(user_input, data_fetcher, ai_analyzer, gemini_analyzer)
         
-        if stock_data:
+        if stock_data and gemini_analysis:
             # Store current data in session state
             st.session_state.current_stock_data = stock_data
-            st.session_state.current_analysis = analysis
+            st.session_state.current_analysis = basic_analysis
+            st.session_state.current_gemini_analysis = gemini_analysis
+            
+            # Create response message based on Gemini analysis
+            if gemini_analysis.get('key_insights'):
+                response_content = f"**Analysis Complete for {stock_data.get('company_name', 'Unknown Company')}**\n\n"
+                response_content += "Key highlights:\n"
+                for insight in gemini_analysis['key_insights'][:3]:  # Show first 3 insights
+                    response_content += f"• {insight}\n"
+                response_content += "\nDetailed analysis available in tabs below."
+            else:
+                response_content = f"**Analysis Complete for {stock_data.get('company_name', 'Unknown Company')}**\n\nComprehensive financial data and analysis available in the tabs below."
             
             # Add assistant response to history
             st.session_state.chat_history.append({
                 "role": "assistant", 
-                "content": analysis,
-                "stock_data": stock_data
+                "content": response_content,
+                "stock_data": stock_data,
+                "gemini_analysis": gemini_analysis
             })
         else:
             # Add error message to history
+            error_message = basic_analysis if basic_analysis else "Error processing stock analysis"
             st.session_state.chat_history.append({
                 "role": "assistant", 
-                "content": analysis  # This contains the error message
+                "content": error_message
             })
         
         # Rerun to update the display

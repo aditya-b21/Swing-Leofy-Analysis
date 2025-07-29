@@ -112,7 +112,7 @@ class StockDataFetcher:
             
             # Get comprehensive financial data
             annual_data = self._get_annual_financials(stock)
-            quarterly_data = self._get_quarterly_financials(stock)
+            quarterly_data = self._get_quarterly_financials_detailed(stock)
             
             # Get detailed financial statements
             balance_sheet_data = self._get_balance_sheet_data(stock)
@@ -224,6 +224,104 @@ class StockDataFetcher:
         except Exception as e:
             print(f"Error getting annual financials: {e}")
             return pd.DataFrame({'Message': [f'Error: {str(e)}']})
+    
+    def _get_quarterly_financials_detailed(self, stock):
+        """Get detailed quarterly financial data for last 10 quarters"""
+        try:
+            # Get quarterly financials and balance sheet
+            quarterly_financials = None
+            quarterly_balance_sheet = None
+            
+            try:
+                quarterly_financials = stock.quarterly_financials
+                quarterly_balance_sheet = stock.quarterly_balance_sheet
+            except Exception as e:
+                print(f"Quarterly financials fetch failed: {e}")
+                return pd.DataFrame({'Message': ['Quarterly financial data not available']})
+            
+            if quarterly_financials is None or quarterly_financials.empty:
+                return pd.DataFrame({'Message': ['No quarterly financial data found']})
+            
+            # Prepare detailed quarterly data for last 10 quarters
+            quarterly_data = []
+            info = stock.info if hasattr(stock, 'info') else {}
+            
+            # Limit to 10 quarters as requested
+            quarters_to_process = min(10, len(quarterly_financials.columns))
+            
+            for i, quarter in enumerate(quarterly_financials.columns[:quarters_to_process]):
+                quarter_str = quarter.strftime('%Y-Q%m') if hasattr(quarter, 'strftime') else str(quarter)
+                
+                # Calculate EPS
+                net_income = self._safe_get_value(quarterly_financials, 'Net Income', quarter)
+                shares_outstanding = info.get('sharesOutstanding', info.get('impliedSharesOutstanding'))
+                eps = None
+                if net_income and shares_outstanding:
+                    eps = net_income / shares_outstanding
+                
+                # Calculate ROA
+                total_assets = self._safe_get_value(quarterly_balance_sheet, 'Total Assets', quarter) if quarterly_balance_sheet is not None else None
+                roa = None
+                if net_income and total_assets:
+                    roa = (net_income / total_assets) * 100
+                
+                # Calculate margins
+                total_revenue = self._safe_get_value(quarterly_financials, 'Total Revenue', quarter)
+                margin = None
+                if net_income and total_revenue:
+                    margin = (net_income / total_revenue) * 100
+                
+                # Get current ratio components
+                current_assets = self._safe_get_value(quarterly_balance_sheet, 'Current Assets', quarter) if quarterly_balance_sheet is not None else None
+                current_liabilities = self._safe_get_value(quarterly_balance_sheet, 'Current Liabilities', quarter) if quarterly_balance_sheet is not None else None
+                current_ratio = None
+                if current_assets and current_liabilities:
+                    current_ratio = current_assets / current_liabilities
+                
+                # Get debt to equity
+                total_debt = self._safe_get_value(quarterly_balance_sheet, 'Total Debt', quarter) if quarterly_balance_sheet is not None else None
+                stockholders_equity = self._safe_get_value(quarterly_balance_sheet, 'Stockholders Equity', quarter) if quarterly_balance_sheet is not None else None
+                debt_to_equity = None
+                if total_debt and stockholders_equity:
+                    debt_to_equity = total_debt / stockholders_equity
+                
+                # PE Ratio (using current stock price and quarterly EPS)
+                current_price = info.get('currentPrice', info.get('regularMarketPrice'))
+                pe_ratio = None
+                if current_price and eps and eps > 0:
+                    pe_ratio = current_price / eps
+                
+                quarterly_record = {
+                    'Quarter': quarter_str,
+                    'EPS': eps,
+                    'ROA (%)': roa,
+                    'Net Margin (%)': margin,
+                    'Current Ratio': current_ratio,
+                    'Debt to Equity': debt_to_equity,
+                    'PE Ratio': pe_ratio,
+                    'Revenue': total_revenue,
+                    'Net Income': net_income
+                }
+                quarterly_data.append(quarterly_record)
+            
+            result_df = pd.DataFrame(quarterly_data)
+            return result_df if not result_df.empty else pd.DataFrame({'Message': ['Quarterly data processing failed']})
+            
+        except Exception as e:
+            print(f"Error getting detailed quarterly financials: {e}")
+            return pd.DataFrame({'Message': [f'Error: {str(e)}']})
+    
+    def _safe_get_value(self, dataframe, key, column):
+        """Safely get value from dataframe"""
+        try:
+            if dataframe is None or dataframe.empty:
+                return None
+            if key in dataframe.index and column in dataframe.columns:
+                value = dataframe.loc[key, column]
+                return value if pd.notna(value) else None
+            return None
+        except Exception:
+            return None
     
     def _get_quarterly_financials(self, stock):
         """Get quarterly financial data with timeout protection"""

@@ -131,15 +131,21 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### January 29, 2025 - UI Improvements and Data Accuracy
-- **Fixed Tab Structure**: Reduced from 4 tabs to 3 organized tabs:
+### January 29, 2025 - Google Gemini Integration & Advanced Analysis Tabs
+- **Google Gemini AI Integration**: Integrated Google Gemini API for comprehensive stock analysis
+  - Added detailed AI-powered insights using user's Gemini API key
+  - Enhanced analysis includes key insights, investor implications, and detailed financial assessment
+- **Enhanced Tab Structure**: Expanded from 3 tabs to 5 comprehensive tabs:
   - "📊 Financial Metrics" - All financial ratios, growth metrics, and financial statements
   - "📈 Market Data" - Price performance, shareholding patterns, and market statistics  
   - "🏢 Company Profile" - Company information and business details
+  - "🤖 Detailed Analysis" - Comprehensive AI analysis with quarterly financial ratios table
+  - "📋 Summary & Insights" - Key insights, investor implications, and financial health summary
+- **Quarterly Financial Ratios**: Added last 10 quarters data table with EPS, ROA, margins, current ratio, debt-to-equity, and PE ratios
+- **Advanced Data Processing**: Enhanced quarterly data collection with detailed financial calculations
+- **AI-Powered Insights**: Three-section analysis format with key insights, investor implications, and comprehensive analysis
+- **Visual Health Indicators**: Color-coded financial health metrics with success/warning indicators
 - **Enhanced Data Validation**: Improved currency and percentage formatting with better error handling
-- **Improved AI Analysis**: Added comprehensive fallback analysis when AI services are unavailable
-- **Better Visual Organization**: Used metric cards and structured layouts for cleaner data display
-- **Data Accuracy**: Added validation for all numerical data to prevent display errors: Latest modifications with dates
 
 ### 2025-07-27 - Major Enhancement for Total & Accurate Data
 - **Enhanced Data Accuracy**: Expanded stock data collection to 42+ comprehensive financial fields
