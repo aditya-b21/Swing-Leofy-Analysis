@@ -144,7 +144,7 @@ def display_dashboard_overview(stock_data):
             margin-bottom: 10px;
         ">
             <div style="color: #666; font-size: 12px; margin-bottom: 5px;">ROE (%)</div>
-            <div style="color: #333; font-size: 20px; font-weight: 600;">{roe:.2f if roe else 'N/A'}</div>
+            <div style="color: #333; font-size: 20px; font-weight: 600;">{'%.2f' % roe if roe else 'N/A'}</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -160,7 +160,7 @@ def display_dashboard_overview(stock_data):
             margin-bottom: 10px;
         ">
             <div style="color: #666; font-size: 12px; margin-bottom: 5px;">ROCE (%)</div>
-            <div style="color: #333; font-size: 20px; font-weight: 600;">{roce:.2f if roce else 'N/A'}</div>
+            <div style="color: #333; font-size: 20px; font-weight: 600;">{'%.2f' % roce if roce else 'N/A'}</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -176,7 +176,7 @@ def display_dashboard_overview(stock_data):
             margin-bottom: 10px;
         ">
             <div style="color: #666; font-size: 12px; margin-bottom: 5px;">EPS (₹)</div>
-            <div style="color: #333; font-size: 20px; font-weight: 600;">{eps:.2f if eps else 'N/A'}</div>
+            <div style="color: #333; font-size: 20px; font-weight: 600;">{'%.2f' % eps if eps else 'N/A'}</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -193,7 +193,7 @@ def display_dashboard_overview(stock_data):
             margin-bottom: 10px;
         ">
             <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Debt/Equity</div>
-            <div style="color: #333; font-size: 20px; font-weight: 600;">{debt_equity:.2f if debt_equity else 'N/A'}</div>
+            <div style="color: #333; font-size: 20px; font-weight: 600;">{'%.2f' % debt_equity if debt_equity else 'N/A'}</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -210,7 +210,7 @@ def display_dashboard_overview(stock_data):
             margin-bottom: 10px;
         ">
             <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Current Ratio</div>
-            <div style="color: #333; font-size: 20px; font-weight: 600;">{current_ratio:.2f if current_ratio else 'N/A'}</div>
+            <div style="color: #333; font-size: 20px; font-weight: 600;">{'%.2f' % current_ratio if current_ratio else 'N/A'}</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -227,7 +227,7 @@ def display_dashboard_overview(stock_data):
             margin-bottom: 10px;
         ">
             <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Net Sales Growth (%)</div>
-            <div style="color: #333; font-size: 20px; font-weight: 600;">{net_sales_growth:.2f if net_sales_growth else 'N/A'}</div>
+            <div style="color: #333; font-size: 20px; font-weight: 600;">{'%.2f' % net_sales_growth if net_sales_growth else 'N/A'}</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -292,7 +292,7 @@ def display_shareholding_pattern(stock_data):
                 margin-bottom: 10px;
             ">
                 <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Promoter (%)</div>
-                <div style="color: #333; font-size: 20px; font-weight: 600;">{promoter:.2f if promoter else 'N/A'}</div>
+                <div style="color: #333; font-size: 20px; font-weight: 600;">{'%.2f' % promoter if promoter else 'N/A'}</div>
             </div>
             """, unsafe_allow_html=True)
         
@@ -307,7 +307,7 @@ def display_shareholding_pattern(stock_data):
                 margin-bottom: 10px;
             ">
                 <div style="color: #666; font-size: 12px; margin-bottom: 5px;">FII (%)</div>
-                <div style="color: #333; font-size: 20px; font-weight: 600;">{stock_data.get('fii_holding', 0):.2f if stock_data.get('fii_holding') else 'N/A'}</div>
+                <div style="color: #333; font-size: 20px; font-weight: 600;">{'%.2f' % stock_data.get('fii_holding', 0) if stock_data.get('fii_holding') else 'N/A'}</div>
             </div>
             """, unsafe_allow_html=True)
         
@@ -322,7 +322,7 @@ def display_shareholding_pattern(stock_data):
                 margin-bottom: 10px;
             ">
                 <div style="color: #666; font-size: 12px; margin-bottom: 5px;">DII (%)</div>
-                <div style="color: #333; font-size: 20px; font-weight: 600;">{stock_data.get('dii_holding', 0):.2f if stock_data.get('dii_holding') else 'N/A'}</div>
+                <div style="color: #333; font-size: 20px; font-weight: 600;">{'%.2f' % stock_data.get('dii_holding', 0) if stock_data.get('dii_holding') else 'N/A'}</div>
             </div>
             """, unsafe_allow_html=True)
 
