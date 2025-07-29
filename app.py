@@ -85,54 +85,288 @@ def initialize_session_state():
     if 'current_analysis' not in st.session_state:
         st.session_state.current_analysis = None
 
-def display_stock_overview(stock_data):
-    """Display stock overview in a structured format"""
-    col1, col2, col3, col4 = st.columns(4)
+def display_company_header(stock_data):
+    """Display professional company header like reference image"""
+    company_name = stock_data.get('company_name', 'Unknown Company')
+    current_price = stock_data.get('current_price', 0)
+    change_percent = stock_data.get('change_percent', 0)
+    symbol = stock_data.get('symbol', 'N/A')
+    sector = stock_data.get('sector', 'N/A')
+    industry = stock_data.get('industry', 'N/A')
     
+    # Main company header with gradient background
+    st.markdown(f"""
+    <div style="
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    ">
+        <h2 style="margin: 0; font-size: 28px; font-weight: 600; color: white;">{company_name}</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+            <div>
+                <p style="margin: 0; font-size: 16px; opacity: 0.9; color: white;">Symbol: <strong>{symbol}</strong></p>
+                <p style="margin: 0; font-size: 14px; opacity: 0.8; color: white;">Industry: {industry}</p>
+                <p style="margin: 0; font-size: 14px; opacity: 0.8; color: white;">Sector: {sector}</p>
+            </div>
+            <div style="text-align: right;">
+                <p style="margin: 0; font-size: 32px; font-weight: 700; color: white;">{format_currency(current_price)}</p>
+                <p style="margin: 0; font-size: 16px; color: {'#4CAF50' if change_percent >= 0 else '#f44336'};">
+                    {'▲' if change_percent >= 0 else '▼'} {abs(change_percent):.2f}%
+                </p>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+def display_dashboard_overview(stock_data):
+    """Display professional dashboard overview with key metrics"""
+    
+    # Quick Financial Analysis - 6 column layout like reference
+    st.markdown("### Quick Financial Analysis")
+    st.markdown("*Latest Data*")
+    
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
+    
+    # Row 1: Core metrics
     with col1:
-        st.metric(
-            "Current Price", 
-            format_currency(stock_data.get('current_price')),
-            delta=f"{format_percentage(stock_data.get('change_percent'))}%"
-        )
+        roe = stock_data.get('roe', 0)
+        roe_color = "#4CAF50" if roe and roe > 15 else "#FF9800" if roe and roe > 10 else "#f44336"
+        st.markdown(f"""
+        <div style="
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid {roe_color};
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        ">
+            <div style="color: #666; font-size: 12px; margin-bottom: 5px;">ROE (%)</div>
+            <div style="color: #333; font-size: 20px; font-weight: 600;">{roe:.2f if roe else 'N/A'}</div>
+        </div>
+        """, unsafe_allow_html=True)
     
     with col2:
-        st.metric(
-            "Market Cap", 
-            format_currency(stock_data.get('market_cap'))
-        )
+        roce = stock_data.get('roce', 0)
+        st.markdown(f"""
+        <div style="
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #2196F3;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        ">
+            <div style="color: #666; font-size: 12px; margin-bottom: 5px;">ROCE (%)</div>
+            <div style="color: #333; font-size: 20px; font-weight: 600;">{roce:.2f if roce else 'N/A'}</div>
+        </div>
+        """, unsafe_allow_html=True)
     
     with col3:
-        st.metric(
-            "P/E Ratio", 
-            stock_data.get('pe_ratio', 'N/A')
-        )
+        eps = stock_data.get('eps', 0)
+        st.markdown(f"""
+        <div style="
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #9C27B0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        ">
+            <div style="color: #666; font-size: 12px; margin-bottom: 5px;">EPS (₹)</div>
+            <div style="color: #333; font-size: 20px; font-weight: 600;">{eps:.2f if eps else 'N/A'}</div>
+        </div>
+        """, unsafe_allow_html=True)
     
     with col4:
-        st.metric(
-            "52W High/Low", 
-            f"{format_currency(stock_data.get('fifty_two_week_high'))} / {format_currency(stock_data.get('fifty_two_week_low'))}"
-        )
+        debt_equity = stock_data.get('debt_to_equity', 0)
+        de_color = "#4CAF50" if debt_equity and debt_equity < 0.5 else "#FF9800" if debt_equity and debt_equity < 1.0 else "#f44336"
+        st.markdown(f"""
+        <div style="
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid {de_color};
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        ">
+            <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Debt/Equity</div>
+            <div style="color: #333; font-size: 20px; font-weight: 600;">{debt_equity:.2f if debt_equity else 'N/A'}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col5:
+        current_ratio = stock_data.get('current_ratio', 0)
+        cr_color = "#4CAF50" if current_ratio and current_ratio > 1.5 else "#FF9800" if current_ratio and current_ratio > 1.0 else "#f44336"
+        st.markdown(f"""
+        <div style="
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid {cr_color};
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        ">
+            <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Current Ratio</div>
+            <div style="color: #333; font-size: 20px; font-weight: 600;">{current_ratio:.2f if current_ratio else 'N/A'}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col6:
+        net_sales_growth = stock_data.get('revenue_growth', 0)
+        growth_color = "#4CAF50" if net_sales_growth and net_sales_growth > 0 else "#f44336"
+        st.markdown(f"""
+        <div style="
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid {growth_color};
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        ">
+            <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Net Sales Growth (%)</div>
+            <div style="color: #333; font-size: 20px; font-weight: 600;">{net_sales_growth:.2f if net_sales_growth else 'N/A'}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+def display_shareholding_pattern(stock_data):
+    """Display shareholding pattern like reference image"""
+    st.markdown("### Shareholding Pattern")
+    
+    col1, col2 = st.columns([1, 2])
+    
+    with col1:
+        # Create pie chart data for shareholding
+        promoter = stock_data.get('promoter_holding', 0)
+        institutional = stock_data.get('institutional_holding', 0)
+        public = 100 - promoter - institutional if promoter and institutional else 0
+        
+        # Display pie chart visualization using text (since we can't use real charts)
+        st.markdown("""
+        <div style="
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        ">
+            <div style="text-align: center; margin-bottom: 15px;">
+                <div style="
+                    width: 120px; 
+                    height: 120px; 
+                    border-radius: 50%; 
+                    background: conic-gradient(
+                        #3f51b5 0deg {}deg,
+                        #4caf50 {}deg {}deg,
+                        #ff9800 {}deg 360deg
+                    );
+                    margin: 0 auto;
+                "></div>
+            </div>
+            <div style="font-size: 12px; color: #333;">
+                <div style="margin: 5px 0;"><span style="color: #3f51b5;">■</span> Promoter</div>
+                <div style="margin: 5px 0;"><span style="color: #4caf50;">■</span> Institutional</div>
+                <div style="margin: 5px 0;"><span style="color: #ff9800;">■</span> Public</div>
+            </div>
+        </div>
+        """.format(
+            promoter * 3.6,  # Convert percentage to degrees
+            promoter * 3.6,
+            (promoter + institutional) * 3.6,
+            (promoter + institutional) * 3.6
+        ), unsafe_allow_html=True)
+    
+    with col2:
+        # Display detailed shareholding metrics
+        col_a, col_b, col_c = st.columns(3)
+        
+        with col_a:
+            st.markdown(f"""
+            <div style="
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                border-left: 4px solid #3f51b5;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                margin-bottom: 10px;
+            ">
+                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Promoter (%)</div>
+                <div style="color: #333; font-size: 20px; font-weight: 600;">{promoter:.2f if promoter else 'N/A'}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col_b:
+            st.markdown(f"""
+            <div style="
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                border-left: 4px solid #4caf50;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                margin-bottom: 10px;
+            ">
+                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">FII (%)</div>
+                <div style="color: #333; font-size: 20px; font-weight: 600;">{stock_data.get('fii_holding', 0):.2f if stock_data.get('fii_holding') else 'N/A'}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col_c:
+            st.markdown(f"""
+            <div style="
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                border-left: 4px solid #ff9800;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                margin-bottom: 10px;
+            ">
+                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">DII (%)</div>
+                <div style="color: #333; font-size: 20px; font-weight: 600;">{stock_data.get('dii_holding', 0):.2f if stock_data.get('dii_holding') else 'N/A'}</div>
+            </div>
+            """, unsafe_allow_html=True)
 
 def display_detailed_analysis(stock_data, gemini_analysis=None):
     """Display detailed stock analysis in organized tabs"""
-    # Create enhanced tab structure with detailed analysis and summary
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "📊 Financial Metrics", 
-        "📈 Market Data", 
-        "🏢 Company Profile",
-        "🤖 Detailed Analysis",
-        "📋 Summary & Insights"
+    # Create professional tab structure like reference image
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+        "Overview", 
+        "Chart", 
+        "Analysis",
+        "P&L",
+        "Balance Sheet",
+        "Cash Flow", 
+        "Investors"
     ])
     
     with tab1:
-        st.subheader("📊 Key Financial Ratios")
+        # Company Overview tab like reference image
+        st.markdown("#### Company Details")
         
-        # Create three columns for better organization
+        # Company info in structured format like reference
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**Scrip Name:** " + (stock_data.get('symbol', 'N/A')))
+            st.markdown("**Chairman:** " + (stock_data.get('chairman', 'N/A')))
+            st.markdown("**Status:** Active")
+        
+        with col2:
+            st.markdown("**Industry:** " + (stock_data.get('industry', 'N/A')))
+            st.markdown("**Managing Director:** " + (stock_data.get('managing_director', 'N/A')))
+            st.markdown("**Face Value (₹):** " + str(stock_data.get('face_value', 'N/A')))
+        
+        # Display the shareholding pattern and financial analysis that's already above
+        st.markdown("---")
+        
+        # Key Financial Ratios
+        st.subheader("Key Financial Ratios")
+        
+        # Create three columns for better organization  
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            st.markdown("**💰 Valuation Ratios**")
+            st.markdown("**Valuation Ratios**")
             valuation_metrics = [
                 ("P/E Ratio", stock_data.get('pe_ratio', 'N/A')),
                 ("P/B Ratio", stock_data.get('pb_ratio', 'N/A')),
@@ -144,7 +378,7 @@ def display_detailed_analysis(stock_data, gemini_analysis=None):
                 st.metric(metric, value)
         
         with col2:
-            st.markdown("**💪 Financial Health**")
+            st.markdown("**Financial Health**")
             health_metrics = [
                 ("Current Ratio", stock_data.get('current_ratio', 'N/A')),
                 ("Quick Ratio", stock_data.get('quick_ratio', 'N/A')),
@@ -190,56 +424,42 @@ def display_detailed_analysis(stock_data, gemini_analysis=None):
                 st.info("Quarterly financial data not available")
     
     with tab2:
-        st.subheader("📈 Market Performance & Trading Data")
+        # Chart tab - showing price and volume data like reference image
+        st.subheader("Stock Price & Volume Charts")
         
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("**📊 Price Performance**")
-            price_data = [
-                ("52-Week High", format_currency(stock_data.get('fifty_two_week_high'))),
-                ("52-Week Low", format_currency(stock_data.get('fifty_two_week_low'))),
-                ("Average Volume", f"{stock_data.get('average_volume', 'N/A'):,}" if stock_data.get('average_volume') else 'N/A'),
-                ("Market Cap", format_currency(stock_data.get('market_cap')))
-            ]
-            for metric, value in price_data:
-                st.metric(metric, value)
+        # Display historical data if available
+        historical_data = stock_data.get('historical_data')
+        if historical_data is not None and not historical_data.empty:
+            # Show basic price metrics
+            col1, col2, col3, col4 = st.columns(4)
             
-            # Calculate performance vs 52W high/low
-            current_price = stock_data.get('current_price', 0)
-            high_52w = stock_data.get('fifty_two_week_high', 1)
-            low_52w = stock_data.get('fifty_two_week_low', 1)
+            with col1:
+                st.metric("52W High", format_currency(stock_data.get('fifty_two_week_high')))
+            with col2:
+                st.metric("52W Low", format_currency(stock_data.get('fifty_two_week_low')))
+            with col3:
+                st.metric("Day High", format_currency(stock_data.get('day_high')))
+            with col4:
+                st.metric("Day Low", format_currency(stock_data.get('day_low')))
             
-            if current_price and high_52w and low_52w:
-                perf_vs_high = ((current_price / high_52w) - 1) * 100
-                perf_vs_low = ((current_price / low_52w) - 1) * 100
-                st.metric("Performance vs 52W High", format_percentage(perf_vs_high))
-                st.metric("Performance vs 52W Low", format_percentage(perf_vs_low))
-        
-        with col2:
-            st.markdown("**👥 Shareholding Pattern**")
-            shareholding_data = [
-                ("Promoter Holding", format_percentage(stock_data.get('promoter_holding'))),
-                ("FII Holding", format_percentage(stock_data.get('fii_holding'))),
-                ("DII Holding", format_percentage(stock_data.get('dii_holding'))),
-                ("Retail Holding", format_percentage(stock_data.get('retail_holding')))
-            ]
-            
-            for holder, percentage in shareholding_data:
-                st.metric(holder, percentage)
-            
-            # Additional market data
-            st.markdown("**📊 Additional Market Data**")
-            additional_data = [
-                ("Beta", stock_data.get('beta', 'N/A')),
-                ("Float Shares", f"{stock_data.get('float_shares', 'N/A'):,}" if stock_data.get('float_shares') else 'N/A'),
-                ("Shares Outstanding", f"{stock_data.get('shares_outstanding', 'N/A'):,}" if stock_data.get('shares_outstanding') else 'N/A')
-            ]
-            for metric, value in additional_data:
-                st.metric(metric, value)
+            st.markdown("---")
+            st.markdown("**Historical Price Data (Last 30 Days)**")
+            # Show recent historical data
+            recent_data = historical_data.tail(30) if len(historical_data) > 30 else historical_data
+            if not recent_data.empty:
+                # Format the data for better display
+                display_data = recent_data[['Close', 'Volume', 'High', 'Low']].copy()
+                display_data['Close'] = display_data['Close'].round(2)
+                display_data['High'] = display_data['High'].round(2) 
+                display_data['Low'] = display_data['Low'].round(2)
+                display_data['Volume'] = display_data['Volume'].astype(int)
+                st.dataframe(display_data, use_container_width=True)
+        else:
+            st.info("Chart data will be displayed here when available")
     
     with tab3:
-        st.subheader("🏢 Company Information")
+        # Analysis tab with AI insights and financial analysis
+        st.subheader("Detailed Financial Analysis")
         
         col1, col2 = st.columns(2)
         
@@ -278,7 +498,8 @@ def display_detailed_analysis(stock_data, gemini_analysis=None):
             st.info("Business summary not available for this company.")
     
     with tab4:
-        st.subheader("🤖 Detailed AI Analysis")
+        # P&L Statement tab
+        st.subheader("Profit & Loss Statement")
         
         if gemini_analysis:
             # Display detailed analysis from Gemini
@@ -345,10 +566,114 @@ def display_detailed_analysis(stock_data, gemini_analysis=None):
             else:
                 st.info("Quarterly financial data not available for detailed analysis.")
         else:
-            st.info("Generating detailed analysis...")
+            # Show P&L data from financial statements
+            annual_data = stock_data.get('annual_data')
+            if annual_data is not None and not annual_data.empty:
+                st.markdown("**Annual Profit & Loss Statement**")
+                st.dataframe(annual_data, use_container_width=True, hide_index=True)
+            else:
+                st.info("P&L statement data not available")
     
     with tab5:
-        st.subheader("📋 Investment Summary & Key Insights")
+        # Balance Sheet tab
+        st.subheader("Balance Sheet Statement")
+        
+        balance_sheet_data = stock_data.get('balance_sheet_data')
+        if balance_sheet_data is not None and not balance_sheet_data.empty:
+            st.dataframe(balance_sheet_data, use_container_width=True, hide_index=True)
+        else:
+            st.info("Balance sheet data not available")
+    
+    with tab6:
+        # Cash Flow tab
+        st.subheader("Cash Flow Statement")
+        
+        cash_flow_data = stock_data.get('cash_flow_data')
+        if cash_flow_data is not None and not cash_flow_data.empty:
+            st.dataframe(cash_flow_data, use_container_width=True, hide_index=True)
+        else:
+            st.info("Cash flow statement data not available")
+    
+    with tab7:
+        # Investors tab - showing detailed shareholding and AI analysis
+        st.subheader("Investor Information & AI Analysis")
+        
+        # Display shareholding pattern
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**Shareholding Pattern**")
+            shareholding_data = [
+                ("Promoter Holding", format_percentage(stock_data.get('promoter_holding'))),
+                ("FII Holding", format_percentage(stock_data.get('fii_holding'))),
+                ("DII Holding", format_percentage(stock_data.get('dii_holding'))),
+                ("Public Holding", format_percentage(stock_data.get('public_holding'))),
+                ("Retail Holding", format_percentage(stock_data.get('retail_holding')))
+            ]
+            
+            for holder, percentage in shareholding_data:
+                st.metric(holder, percentage)
+        
+        with col2:
+            st.markdown("**Market Information**")
+            market_info = [
+                ("Market Cap", format_currency(stock_data.get('market_cap'))),
+                ("Float Shares", f"{stock_data.get('float_shares', 'N/A'):,}" if stock_data.get('float_shares') else 'N/A'),
+                ("Shares Outstanding", f"{stock_data.get('shares_outstanding', 'N/A'):,}" if stock_data.get('shares_outstanding') else 'N/A'),
+                ("Beta", stock_data.get('beta', 'N/A'))
+            ]
+            
+            for metric, value in market_info:
+                st.metric(metric, value)
+        
+        # AI Analysis Section
+        if gemini_analysis:
+            st.markdown("---")
+            st.markdown("### AI Investment Analysis")
+            
+            # Key Insights Section
+            insights = gemini_analysis.get('key_insights', [])
+            if insights:
+                st.markdown("**Key Investment Insights:**")
+                for i, insight in enumerate(insights, 1):
+                    st.markdown(f"{i}. {insight}")
+            
+            # Investor Implications Section
+            implications = gemini_analysis.get('investor_implications', '')
+            if implications:
+                st.markdown("**Investment Implications:**")
+                st.markdown(implications)
+            
+            # Quarterly Financial Ratios Table
+            st.markdown("---")
+            st.markdown("**Quarterly Financial Ratios (Last 10 Quarters)**")
+            
+            quarterly_data = stock_data.get('quarterly_data')
+            if quarterly_data is not None and not quarterly_data.empty and 'Quarter' in quarterly_data.columns:
+                # Create a focused table with key financial ratios
+                display_columns = ['Quarter', 'EPS', 'ROA (%)', 'Net Margin (%)', 'Current Ratio', 'Debt to Equity', 'PE Ratio']
+                available_columns = [col for col in display_columns if col in quarterly_data.columns]
+                
+                if available_columns:
+                    # Format the data for better display
+                    formatted_data = quarterly_data[available_columns].copy()
+                    
+                    # Round numerical values for better display
+                    for col in formatted_data.columns:
+                        if col != 'Quarter' and pd.api.types.is_numeric_dtype(formatted_data[col]):
+                            formatted_data[col] = formatted_data[col].round(2)
+                    
+                    st.dataframe(
+                        formatted_data,
+                        use_container_width=True,
+                        hide_index=True
+                    )
+                else:
+                    st.info("Quarterly financial ratio data is being processed...")
+            else:
+                st.info("Quarterly financial data not available for detailed analysis.")
+        else:
+            st.info("AI analysis and quarterly data being generated...")
         
         if gemini_analysis:
             # Key Insights Section
@@ -447,16 +772,16 @@ def process_stock_query(user_input, data_fetcher, ai_analyzer, gemini_analyzer):
         if not stock_symbol:
             return None, None, "Please provide a valid stock symbol (e.g., TCS, RELIANCE, INFY)"
         
-        # Fetch stock data
-        with st.spinner(f"Fetching comprehensive data for {stock_symbol}..."):
+        # Fetch stock data with simple loading message
+        with st.spinner("📊 Fetching comprehensive financial data..."):
             stock_data = data_fetcher.get_comprehensive_data(stock_symbol)
         
-        # Generate Gemini analysis
-        with st.spinner("Generating detailed AI analysis with Google Gemini..."):
+        # Generate Gemini analysis with simple loading message
+        with st.spinner("🤖 Generating detailed analysis..."):
             gemini_analysis = gemini_analyzer.analyze_stock_comprehensive(stock_data)
         
         # Generate basic analysis as fallback
-        with st.spinner("Generating additional insights..."):
+        with st.spinner("📈 Processing insights..."):
             analysis_result = ai_analyzer.analyze_stock(stock_data)
             
             # Handle both string and dict analysis results
@@ -480,7 +805,10 @@ def display_chat_message(role, content, stock_data=None, gemini_analysis=None):
         # If stock data is available, display detailed analysis
         if stock_data:
             st.markdown("---")
-            display_stock_overview(stock_data)
+            display_company_header(stock_data)
+            display_dashboard_overview(stock_data)
+            st.markdown("---")
+            display_shareholding_pattern(stock_data)
             st.markdown("---")
             display_detailed_analysis(stock_data, gemini_analysis)
 
@@ -516,6 +844,11 @@ def main():
     user_input = st.chat_input("Ask about any Indian stock (e.g., 'Analyze TCS', 'Tell me about Reliance')")
     
     if user_input:
+        # Clear previous analysis when new stock is searched
+        st.session_state.current_stock_data = None
+        st.session_state.current_analysis = None
+        st.session_state.current_gemini_analysis = None
+        
         # Add user message to history
         st.session_state.chat_history.append({"role": "user", "content": user_input})
         

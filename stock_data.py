@@ -235,16 +235,39 @@ class StockDataFetcher:
             try:
                 quarterly_financials = stock.quarterly_financials
                 quarterly_balance_sheet = stock.quarterly_balance_sheet
+                
+                # Validate data availability
+                if quarterly_financials is None or quarterly_financials.empty:
+                    quarterly_financials = pd.DataFrame()
+                if quarterly_balance_sheet is None or quarterly_balance_sheet.empty:
+                    quarterly_balance_sheet = pd.DataFrame()
+                    
             except Exception as e:
                 print(f"Quarterly financials fetch failed: {e}")
-                return pd.DataFrame({'Message': ['Quarterly financial data not available']})
+                quarterly_financials = pd.DataFrame()
+                quarterly_balance_sheet = pd.DataFrame()
             
-            if quarterly_financials is None or quarterly_financials.empty:
-                return pd.DataFrame({'Message': ['No quarterly financial data found']})
+            # Even if quarterly_financials is empty, create some basic data from stock info
+            info = stock.info if hasattr(stock, 'info') else {}
+            quarterly_data = []
+            
+            if quarterly_financials.empty:
+                # Create a basic quarterly data structure with available info
+                basic_data = {
+                    'Quarter': 'Latest',
+                    'EPS': info.get('eps', None),
+                    'ROA (%)': None,
+                    'Net Margin (%)': info.get('profitMargins', None) * 100 if info.get('profitMargins') else None,
+                    'Current Ratio': info.get('currentRatio', None),
+                    'Debt to Equity': info.get('debtToEquity', None),
+                    'PE Ratio': info.get('forwardPE', None),
+                    'Revenue': info.get('totalRevenue', None),
+                    'Net Income': info.get('netIncomeToCommon', None)
+                }
+                quarterly_data.append(basic_data)
+                return pd.DataFrame(quarterly_data)
             
             # Prepare detailed quarterly data for last 10 quarters
-            quarterly_data = []
-            info = stock.info if hasattr(stock, 'info') else {}
             
             # Limit to 10 quarters as requested
             quarters_to_process = min(10, len(quarterly_financials.columns))
