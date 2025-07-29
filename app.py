@@ -424,27 +424,71 @@ def display_detailed_analysis(stock_data, gemini_analysis=None):
                 st.info("Quarterly financial data not available")
     
     with tab2:
-        # Chart tab - showing price and volume data like reference image
-        st.subheader("Stock Price & Volume Charts")
+        # Enhanced Chart tab with comprehensive price and performance metrics
+        st.subheader("📈 Price Performance & Trading Charts")
         
         # Display historical data if available
         historical_data = stock_data.get('historical_data')
         if historical_data is not None and not historical_data.empty:
-            # Show basic price metrics
-            col1, col2, col3, col4 = st.columns(4)
+            # Enhanced price metrics display
+            col1, col2, col3, col4, col5 = st.columns(5)
             
             with col1:
-                st.metric("52W High", format_currency(stock_data.get('fifty_two_week_high')))
+                st.metric("Current Price", format_currency(stock_data.get('current_price')))
             with col2:
-                st.metric("52W Low", format_currency(stock_data.get('fifty_two_week_low')))
+                st.metric("52W High", format_currency(stock_data.get('fifty_two_week_high')))
             with col3:
-                st.metric("Day High", format_currency(stock_data.get('day_high')))
+                st.metric("52W Low", format_currency(stock_data.get('fifty_two_week_low')))
             with col4:
+                st.metric("Day High", format_currency(stock_data.get('day_high')))
+            with col5:
                 st.metric("Day Low", format_currency(stock_data.get('day_low')))
             
             st.markdown("---")
+            
+            # Price Performance Analysis
+            current_price = stock_data.get('current_price', 0)
+            high_52w = stock_data.get('fifty_two_week_high', 1)
+            low_52w = stock_data.get('fifty_two_week_low', 1)
+            
+            col_a, col_b, col_c, col_d = st.columns(4)
+            
+            if current_price and high_52w and low_52w:
+                perf_vs_high = ((current_price / high_52w) - 1) * 100
+                perf_vs_low = ((current_price / low_52w) - 1) * 100
+                
+                with col_a:
+                    st.metric("vs 52W High", f"{perf_vs_high:.2f}%", 
+                             delta=f"{perf_vs_high:.2f}%" if perf_vs_high >= 0 else f"{perf_vs_high:.2f}%")
+                with col_b:
+                    st.metric("vs 52W Low", f"{perf_vs_low:.2f}%",
+                             delta=f"{perf_vs_low:.2f}%" if perf_vs_low >= 0 else f"{perf_vs_low:.2f}%")
+            
+            with col_c:
+                st.metric("Average Volume", f"{stock_data.get('average_volume', 0):,}" if stock_data.get('average_volume') else 'N/A')
+            with col_d:
+                st.metric("Beta", f"{stock_data.get('beta', 'N/A')}")
+            
+            st.markdown("---")
+            
+            # Chart visualization using Streamlit's built-in chart
+            st.markdown("**📊 Price Chart (Last 6 Months)**")
+            
+            # Get last 6 months of data for chart
+            chart_data = historical_data.tail(180) if len(historical_data) > 180 else historical_data
+            
+            if not chart_data.empty and 'Close' in chart_data.columns:
+                # Create a simple line chart
+                st.line_chart(chart_data['Close'])
+                
+                st.markdown("**📊 Volume Chart (Last 6 Months)**")
+                if 'Volume' in chart_data.columns:
+                    st.bar_chart(chart_data['Volume'])
+            
+            st.markdown("---")
             st.markdown("**Historical Price Data (Last 30 Days)**")
-            # Show recent historical data
+            
+            # Show recent historical data in table format
             recent_data = historical_data.tail(30) if len(historical_data) > 30 else historical_data
             if not recent_data.empty:
                 # Format the data for better display
@@ -453,7 +497,12 @@ def display_detailed_analysis(stock_data, gemini_analysis=None):
                 display_data['High'] = display_data['High'].round(2) 
                 display_data['Low'] = display_data['Low'].round(2)
                 display_data['Volume'] = display_data['Volume'].astype(int)
-                st.dataframe(display_data, use_container_width=True)
+                
+                # Add date column
+                display_data['Date'] = display_data.index.strftime('%Y-%m-%d')
+                display_data = display_data[['Date', 'Close', 'High', 'Low', 'Volume']]
+                
+                st.dataframe(display_data, use_container_width=True, hide_index=True)
         else:
             st.info("Chart data will be displayed here when available")
     

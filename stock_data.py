@@ -114,10 +114,39 @@ class StockDataFetcher:
             annual_data = self._get_annual_financials(stock)
             quarterly_data = self._get_quarterly_financials_detailed(stock)
             
-            # Get detailed financial statements
-            balance_sheet_data = self._get_balance_sheet_data(stock)
-            income_statement_data = self._get_income_statement_data(stock)
-            cash_flow_data = self._get_cash_flow_data(stock)
+            # Get detailed financial statements with enhanced error handling
+            try:
+                balance_sheet_data = stock.balance_sheet if hasattr(stock, 'balance_sheet') else pd.DataFrame()
+                if not balance_sheet_data.empty:
+                    balance_sheet_data = balance_sheet_data.fillna('N/A')
+                    # Transpose for better display
+                    balance_sheet_data = balance_sheet_data.T
+                    balance_sheet_data.index = [idx.strftime('%Y') if hasattr(idx, 'strftime') else str(idx) for idx in balance_sheet_data.index]
+            except Exception as e:
+                print(f"Balance sheet error: {e}")
+                balance_sheet_data = pd.DataFrame()
+                
+            try:
+                income_statement_data = stock.financials if hasattr(stock, 'financials') else pd.DataFrame()  
+                if not income_statement_data.empty:
+                    income_statement_data = income_statement_data.fillna('N/A')
+                    # Transpose for better display
+                    income_statement_data = income_statement_data.T
+                    income_statement_data.index = [idx.strftime('%Y') if hasattr(idx, 'strftime') else str(idx) for idx in income_statement_data.index]
+            except Exception as e:
+                print(f"Income statement error: {e}")
+                income_statement_data = pd.DataFrame()
+                
+            try:
+                cash_flow_data = stock.cashflow if hasattr(stock, 'cashflow') else pd.DataFrame()
+                if not cash_flow_data.empty:
+                    cash_flow_data = cash_flow_data.fillna('N/A')
+                    # Transpose for better display
+                    cash_flow_data = cash_flow_data.T
+                    cash_flow_data.index = [idx.strftime('%Y') if hasattr(idx, 'strftime') else str(idx) for idx in cash_flow_data.index]
+            except Exception as e:
+                print(f"Cash flow error: {e}")
+                cash_flow_data = pd.DataFrame()
             
             # Get additional financial metrics
             additional_metrics = self._get_additional_metrics(stock, info)
@@ -150,6 +179,8 @@ class StockDataFetcher:
                 'operating_margins': info.get('operatingMargins', None) * 100 if info.get('operatingMargins') else None,
                 'revenue_growth': info.get('revenueGrowth', None) * 100 if info.get('revenueGrowth') else None,
                 'earnings_growth': info.get('earningsGrowth', None) * 100 if info.get('earningsGrowth') else None,
+                'eps': info.get('eps', info.get('trailingEps', None)),
+                'net_sales_growth': info.get('revenueGrowth', None) * 100 if info.get('revenueGrowth') else None,
                 'promoter_holding': self._get_promoter_holding(info),
                 'fii_holding': self._get_fii_holding(info),
                 'dii_holding': self._get_dii_holding(info),
@@ -157,9 +188,9 @@ class StockDataFetcher:
                 'retail_holding': self._get_retail_holding(info),
                 'annual_data': annual_data,
                 'quarterly_data': quarterly_data,
-                'balance_sheet': balance_sheet_data,
-                'income_statement': income_statement_data,  
-                'cash_flow': cash_flow_data,
+                'balance_sheet_data': balance_sheet_data,
+                'income_statement_data': income_statement_data,  
+                'cash_flow_data': cash_flow_data,
                 'historical_data': hist_data,
                 'sector': info.get('sector', 'N/A'),
                 'industry': info.get('industry', 'N/A'),
