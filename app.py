@@ -459,8 +459,134 @@ def display_ai_summary_tab(stock_data, gemini_analysis=None):
             else:
                 st.info("🔍 Advanced financial insights are being generated...")
         
-        # 3. Key Metrics for the Stock
-        st.markdown("## 📊 Key Financial Metrics")
+        # 3. Business Overview and Sector Analysis
+        st.markdown("## 🏢 Business Overview & Sector Analysis")
+        
+        # Company fundamentals
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("### 📋 Company Fundamentals")
+            company_info = [
+                ("Sector", stock_data.get('sector', 'N/A')),
+                ("Industry", stock_data.get('industry', 'N/A')),
+                ("Market Cap", format_currency(stock_data.get('market_cap'))),
+                ("Employee Count", f"{stock_data.get('full_time_employees', 'N/A'):,}" if stock_data.get('full_time_employees') else 'N/A'),
+                ("Beta", f"{stock_data.get('beta', 'N/A'):.2f}" if stock_data.get('beta') else 'N/A')
+            ]
+            
+            for metric, value in company_info:
+                st.markdown(f"**{metric}:** {value}")
+        
+        with col2:
+            st.markdown("### 📈 Performance Metrics")
+            performance_info = [
+                ("52-Week High", format_currency(stock_data.get('fifty_two_week_high'))),
+                ("52-Week Low", format_currency(stock_data.get('fifty_two_week_low'))),
+                ("Average Volume", f"{stock_data.get('average_volume', 'N/A'):,}" if stock_data.get('average_volume') else 'N/A'),
+                ("Dividend Yield", format_percentage(stock_data.get('dividend_yield'))),
+                ("Price to Book", f"{stock_data.get('price_to_book', 'N/A'):.2f}" if stock_data.get('price_to_book') else 'N/A')
+            ]
+            
+            for metric, value in performance_info:
+                st.markdown(f"**{metric}:** {value}")
+        
+        # Business summary if available
+        if stock_data.get('business_summary'):
+            st.markdown("### 📝 Business Summary")
+            st.markdown(f"""
+            <div style="
+                background: rgba(108, 117, 125, 0.08);
+                padding: 15px;
+                border-radius: 8px;
+                border-left: 3px solid #6c757d;
+                margin: 15px 0;
+                color: inherit;
+            ">
+                <p style="color: inherit; line-height: 1.6; margin: 0; font-size: 14px;">
+                    {stock_data.get('business_summary')[:500]}...
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # 4. Valuation Analysis
+        st.markdown("## 💰 Comprehensive Valuation Analysis")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("### 📊 Valuation Ratios")
+            pe_ratio = stock_data.get('pe_ratio')
+            pb_ratio = stock_data.get('price_to_book') 
+            ps_ratio = stock_data.get('price_to_sales')
+            
+            if pe_ratio:
+                pe_status = "Undervalued" if pe_ratio < 15 else "Overvalued" if pe_ratio > 25 else "Fair Value"
+                st.markdown(f"**P/E Ratio:** {pe_ratio:.2f} ({pe_status})")
+            else:
+                st.markdown("**P/E Ratio:** N/A")
+                
+            if pb_ratio:
+                pb_status = "Undervalued" if pb_ratio < 1.5 else "Overvalued" if pb_ratio > 3 else "Fair Value"
+                st.markdown(f"**P/B Ratio:** {pb_ratio:.2f} ({pb_status})")
+            else:
+                st.markdown("**P/B Ratio:** N/A")
+                
+            if ps_ratio:
+                st.markdown(f"**P/S Ratio:** {ps_ratio:.2f}")
+            else:
+                st.markdown("**P/S Ratio:** N/A")
+        
+        with col2:
+            st.markdown("### 💪 Financial Strength")
+            current_ratio = stock_data.get('current_ratio')
+            debt_equity = stock_data.get('debt_to_equity')
+            roe = stock_data.get('roe')
+            
+            if current_ratio:
+                cr_status = "Strong" if current_ratio > 1.5 else "Weak" if current_ratio < 1 else "Adequate"
+                st.markdown(f"**Current Ratio:** {current_ratio:.2f} ({cr_status})")
+            else:
+                st.markdown("**Current Ratio:** N/A")
+                
+            if debt_equity:
+                de_status = "Low Risk" if debt_equity < 0.5 else "High Risk" if debt_equity > 1 else "Moderate"
+                st.markdown(f"**Debt/Equity:** {debt_equity:.2f} ({de_status})")
+            else:
+                st.markdown("**Debt/Equity:** N/A")
+                
+            if roe:
+                roe_status = "Excellent" if roe > 0.15 else "Poor" if roe < 0.10 else "Good"
+                st.markdown(f"**ROE:** {roe*100:.1f}% ({roe_status})")
+            else:
+                st.markdown("**ROE:** N/A")
+        
+        with col3:
+            st.markdown("### 📈 Growth Indicators")
+            revenue_growth = stock_data.get('revenue_growth')
+            earnings_growth = stock_data.get('earnings_growth')
+            profit_margins = stock_data.get('profit_margins')
+            
+            if revenue_growth:
+                rev_status = "High Growth" if revenue_growth > 0.15 else "Declining" if revenue_growth < 0 else "Moderate"
+                st.markdown(f"**Revenue Growth:** {revenue_growth*100:.1f}% ({rev_status})")
+            else:
+                st.markdown("**Revenue Growth:** N/A")
+                
+            if earnings_growth:
+                earn_status = "Strong" if earnings_growth > 0.10 else "Weak" if earnings_growth < 0 else "Stable"
+                st.markdown(f"**Earnings Growth:** {earnings_growth*100:.1f}% ({earn_status})")
+            else:
+                st.markdown("**Earnings Growth:** N/A")
+                
+            if profit_margins:
+                margin_status = "High" if profit_margins > 0.15 else "Low" if profit_margins < 0.05 else "Average"
+                st.markdown(f"**Profit Margins:** {profit_margins*100:.1f}% ({margin_status})")
+            else:
+                st.markdown("**Profit Margins:** N/A")
+        
+        # 5. Key Financial Metrics Dashboard
+        st.markdown("## 📊 Key Financial Metrics Dashboard")
         
         col1, col2, col3, col4 = st.columns(4)
         
@@ -629,6 +755,220 @@ def display_ai_summary_tab(stock_data, gemini_analysis=None):
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
+                
+                # Additional Investment Summary Sections
+                st.markdown("---")
+                st.markdown("## 🎯 Investment Summary & Recommendation")
+                
+                # Create investment recommendation based on available data
+                recommendation_score = 0
+                total_metrics = 0
+                
+                # Score calculation based on key metrics
+                if pe_ratio:
+                    total_metrics += 1
+                    if pe_ratio < 20: recommendation_score += 1
+                    
+                if debt_equity:
+                    total_metrics += 1
+                    if debt_equity < 0.7: recommendation_score += 1
+                    
+                if roe:
+                    total_metrics += 1
+                    if roe > 0.12: recommendation_score += 1
+                    
+                if current_ratio:
+                    total_metrics += 1
+                    if current_ratio > 1.2: recommendation_score += 1
+                    
+                if revenue_growth:
+                    total_metrics += 1
+                    if revenue_growth > 0.05: recommendation_score += 1
+                
+                # Calculate recommendation
+                if total_metrics > 0:
+                    score_percentage = (recommendation_score / total_metrics) * 100
+                    
+                    if score_percentage >= 70:
+                        recommendation = "BUY"
+                        rec_color = "#28a745"
+                        rec_desc = "Strong fundamentals indicate potential for good returns"
+                    elif score_percentage >= 40:
+                        recommendation = "HOLD"
+                        rec_color = "#ffc107"
+                        rec_desc = "Mixed signals suggest careful monitoring"
+                    else:
+                        recommendation = "AVOID"
+                        rec_color = "#dc3545"
+                        rec_desc = "Weak fundamentals indicate higher risk"
+                else:
+                    recommendation = "RESEARCH"
+                    rec_color = "#6c757d"
+                    rec_desc = "Insufficient data for clear recommendation"
+                
+                st.markdown(f"""
+                <div style="
+                    background: rgba(255, 255, 255, 0.1);
+                    padding: 20px;
+                    border-radius: 10px;
+                    border-left: 5px solid {rec_color};
+                    margin: 20px 0;
+                    text-align: center;
+                    backdrop-filter: blur(10px);
+                ">
+                    <h3 style="color: {rec_color}; margin-top: 0;">
+                        📊 Recommendation: {recommendation}
+                    </h3>
+                    <p style="color: inherit; margin: 10px 0; font-size: 16px;">
+                        {rec_desc}
+                    </p>
+                    <div style="color: inherit; font-size: 13px; opacity: 0.8;">
+                        Based on {total_metrics} key financial metrics analysis
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Complete Stock Analysis Summary
+                st.markdown("---")
+                st.markdown("## 📋 Complete Stock Analysis Summary")
+                
+                # Technical Analysis Section
+                st.markdown("### 📈 Technical & Price Analysis")
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    current_price = stock_data.get('current_price', 0)
+                    fifty_two_week_high = stock_data.get('fifty_two_week_high')
+                    fifty_two_week_low = stock_data.get('fifty_two_week_low')
+                    
+                    if fifty_two_week_high and fifty_two_week_low and current_price:
+                        price_position = ((current_price - fifty_two_week_low) / (fifty_two_week_high - fifty_two_week_low)) * 100
+                        
+                        if price_position > 80:
+                            price_status = "Near 52-Week High"
+                            price_color = "#dc3545"
+                        elif price_position < 20:
+                            price_status = "Near 52-Week Low"
+                            price_color = "#28a745"
+                        else:
+                            price_status = "Mid-Range"
+                            price_color = "#ffc107"
+                            
+                        st.markdown(f"""
+                        **Price Position:** {price_position:.1f}% of 52-week range  
+                        **Status:** <span style="color: {price_color};">{price_status}</span>  
+                        **Current Price:** ₹{current_price:,.2f}  
+                        **52W Range:** ₹{fifty_two_week_low:,.2f} - ₹{fifty_two_week_high:,.2f}
+                        """, unsafe_allow_html=True)
+                    else:
+                        st.markdown("Price analysis data not available")
+                
+                with col2:
+                    # Volume and liquidity analysis
+                    avg_volume = stock_data.get('average_volume')
+                    market_cap = stock_data.get('market_cap')
+                    
+                    if avg_volume:
+                        if avg_volume > 1000000:
+                            liquidity = "High Liquidity"
+                            liq_color = "#28a745"
+                        elif avg_volume > 100000:
+                            liquidity = "Moderate Liquidity" 
+                            liq_color = "#ffc107"
+                        else:
+                            liquidity = "Low Liquidity"
+                            liq_color = "#dc3545"
+                            
+                        st.markdown(f"""
+                        **Average Volume:** {avg_volume:,} shares  
+                        **Liquidity:** <span style="color: {liq_color};">{liquidity}</span>  
+                        **Market Cap:** {format_currency(market_cap)}  
+                        **Trading Status:** Active
+                        """, unsafe_allow_html=True)
+                    else:
+                        st.markdown("Volume analysis data not available")
+                
+                # Risk Assessment
+                st.markdown("### ⚠️ Risk Assessment & Considerations")
+                
+                risk_factors = []
+                positive_factors = []
+                
+                # Analyze risk factors
+                if debt_equity and debt_equity > 1.0:
+                    risk_factors.append("High debt levels may impact financial stability")
+                elif debt_equity and debt_equity < 0.3:
+                    positive_factors.append("Low debt provides financial flexibility")
+                    
+                if current_ratio and current_ratio < 1.0:
+                    risk_factors.append("Liquidity concerns due to low current ratio")
+                elif current_ratio and current_ratio > 1.5:
+                    positive_factors.append("Strong liquidity position")
+                    
+                if pe_ratio and pe_ratio > 30:
+                    risk_factors.append("High valuation may limit upside potential")
+                elif pe_ratio and pe_ratio < 15:
+                    positive_factors.append("Attractive valuation with potential upside")
+                    
+                if roe and roe < 0.08:
+                    risk_factors.append("Low return on equity indicates poor profitability")
+                elif roe and roe > 0.15:
+                    positive_factors.append("Excellent return on equity demonstrates efficiency")
+                
+                # Display risk factors
+                if risk_factors:
+                    st.markdown("**⚠️ Key Risk Factors:**")
+                    for risk in risk_factors:
+                        st.markdown(f"• {risk}")
+                
+                if positive_factors:
+                    st.markdown("**✅ Positive Factors:**")
+                    for positive in positive_factors:
+                        st.markdown(f"• {positive}")
+                
+                # Investment Timeframe Analysis
+                st.markdown("### ⏰ Investment Timeframe Analysis")
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.markdown("**📊 Short-term (3-6 months):**")
+                    short_term_outlook = []
+                    
+                    if price_position and price_position < 30:
+                        short_term_outlook.append("✅ Potential bounce from oversold levels")
+                    elif price_position and price_position > 80:
+                        short_term_outlook.append("⚠️ May face resistance near highs")
+                    
+                    if avg_volume and avg_volume > 500000:
+                        short_term_outlook.append("✅ Good liquidity for trading")
+                    
+                    for outlook in short_term_outlook:
+                        st.markdown(f"• {outlook}")
+                    
+                    if not short_term_outlook:
+                        st.markdown("• 📊 Monitor technical indicators and market sentiment")
+                
+                with col2:
+                    st.markdown("**📈 Long-term (1-3 years):**")
+                    long_term_outlook = []
+                    
+                    if roe and roe > 0.12:
+                        long_term_outlook.append("✅ Strong fundamentals support growth")
+                    
+                    if revenue_growth and revenue_growth > 0.1:
+                        long_term_outlook.append("✅ Revenue growth indicates expansion")
+                    elif revenue_growth and revenue_growth < 0:
+                        long_term_outlook.append("⚠️ Declining revenue needs attention")
+                    
+                    if debt_equity and debt_equity < 0.5:
+                        long_term_outlook.append("✅ Conservative debt management")
+                    
+                    for outlook in long_term_outlook:
+                        st.markdown(f"• {outlook}")
+                    
+                    if not long_term_outlook:
+                        st.markdown("• 📊 Focus on fundamental analysis and sector trends")
             else:
                 st.info("Detailed analysis is being generated...")
         
