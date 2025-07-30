@@ -88,25 +88,63 @@ def format_ratio(value):
         return "N/A"
 
 def clean_dataframe_for_display(df):
-    """Clean DataFrame for better display in Streamlit"""
+    """Clean DataFrame for better display in Streamlit and avoid Arrow conversion errors"""
     if df is None or df.empty:
         return pd.DataFrame({"Message": ["No data available"]})
     
     # Create a copy to avoid modifying original
     display_df = df.copy()
     
-    # Replace NaN values with "N/A"
-    display_df = display_df.fillna("N/A")
-    
-    # Format numeric columns appropriately
+    # Convert problematic columns to strings first to avoid Arrow conversion issues
     for col in display_df.columns:
-        if display_df[col].dtype in ['float64', 'int64']:
-            if 'revenue' in col.lower() or 'income' in col.lower() or 'assets' in col.lower() or 'debt' in col.lower():
-                display_df[col] = display_df[col].apply(format_currency)
-            elif 'eps' in col.lower():
-                display_df[col] = display_df[col].apply(lambda x: f"₹{x:.2f}" if pd.notna(x) else "N/A")
-            elif '%' in col or 'ratio' in col.lower():
-                display_df[col] = display_df[col].apply(format_ratio)
+        if col != 'Quarter' and col != 'Year':  # Keep date columns as-is
+            # Convert mixed type columns to string representation
+            display_df[col] = display_df[col].astype(str)
+            # Replace 'nan', 'None', 'NaN' strings with "N/A"
+            display_df[col] = display_df[col].replace(['nan', 'None', 'NaN', '<NA>', 'null'], "N/A")
+    
+    # Format numeric columns appropriately (after converting to string)
+    for col in display_df.columns:
+        if col not in ['Quarter', 'Year', 'Message']:
+            try:
+                # Try to convert back to numeric for formatting
+                numeric_series = pd.to_numeric(display_df[col], errors='coerce')
+                if not pd.isna(numeric_series).all():  # If column has some numeric values
+                    if 'revenue' in col.lower() or 'income' in col.lower() or 'assets' in col.lower() or 'debt' in col.lower():
+                        formatted_values = []
+                        for x in numeric_series:
+                            if pd.notna(x):
+                                formatted_values.append(format_currency(x))
+                            else:
+                                formatted_values.append("N/A")
+                        display_df[col] = formatted_values
+                    elif 'eps' in col.lower():
+                        formatted_values = []
+                        for x in numeric_series:
+                            if pd.notna(x):
+                                formatted_values.append(f"₹{x:.2f}")
+                            else:
+                                formatted_values.append("N/A")
+                        display_df[col] = formatted_values
+                    elif '%' in col or 'ratio' in col.lower() or 'margin' in col.lower():
+                        formatted_values = []
+                        for x in numeric_series:
+                            if pd.notna(x):
+                                formatted_values.append(format_ratio(x))
+                            else:
+                                formatted_values.append("N/A")
+                        display_df[col] = formatted_values
+                    else:
+                        formatted_values = []
+                        for x in numeric_series:
+                            if pd.notna(x):
+                                formatted_values.append(f"{x:.2f}")
+                            else:
+                                formatted_values.append("N/A")
+                        display_df[col] = formatted_values
+            except Exception:
+                # If formatting fails, keep as "N/A" where appropriate
+                display_df[col] = display_df[col].replace(['nan', 'None', 'NaN'], "N/A")
     
     return display_df
 

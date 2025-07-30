@@ -5,7 +5,7 @@ import os
 from stock_data import StockDataFetcher
 from ai_analysis import AIAnalyzer
 from gemini_analysis import GeminiStockAnalyzer
-from utils import format_currency, format_percentage, validate_stock_symbol
+from utils import format_currency, format_percentage, validate_stock_symbol, clean_dataframe_for_display
 
 # Page configuration
 st.set_page_config(
@@ -15,7 +15,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for better styling
+# Custom CSS for better styling with dark mode support
 st.markdown("""
 <style>
     .main-header {
@@ -29,35 +29,79 @@ st.markdown("""
         padding: 1rem;
         border-radius: 0.5rem;
         margin: 0.5rem 0;
+        color: var(--text-color);
     }
     .user-message {
-        background-color: #e3f2fd;
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
         border-left: 4px solid #2196f3;
+        color: #1565c0;
     }
     .assistant-message {
-        background-color: #f5f5f5;
+        background: linear-gradient(135deg, #f1f8e9 0%, #dcedc8 100%);
         border-left: 4px solid #4caf50;
+        color: #2e7d32;
     }
     .metric-card {
-        background-color: #ffffff;
+        background: var(--background-color, rgba(255, 255, 255, 0.95));
         padding: 1rem;
         border-radius: 0.5rem;
-        border: 1px solid #e0e0e0;
+        border: 1px solid var(--border-color, #e0e0e0);
         margin: 0.5rem 0;
+        color: var(--text-color, #333);
     }
     .error-message {
-        background-color: #ffebee;
+        background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
         color: #c62828;
         padding: 1rem;
         border-radius: 0.5rem;
         border-left: 4px solid #f44336;
     }
     .success-message {
-        background-color: #e8f5e8;
+        background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
         color: #2e7d32;
         padding: 1rem;
         border-radius: 0.5rem;
         border-left: 4px solid #4caf50;
+    }
+    
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+        .chat-message {
+            color: #ffffff;
+        }
+        .user-message {
+            background: linear-gradient(135deg, #1a237e 0%, #303f9f 100%);
+            color: #e3f2fd;
+        }
+        .assistant-message {
+            background: linear-gradient(135deg, #1b5e20 0%, #388e3c 100%);
+            color: #e8f5e8;
+        }
+        .metric-card {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    }
+    
+    /* Override Streamlit's default dark mode styles */
+    [data-testid="stChatMessage"] {
+        background: transparent !important;
+    }
+    
+    [data-testid="stChatMessage"] > div {
+        background: transparent !important;
+        color: inherit !important;
+    }
+    
+    /* Ensure text is visible in all containers */
+    .stContainer, .element-container {
+        color: var(--text-color) !important;
+    }
+    
+    /* Fix white text on white background issues */
+    .stMarkdown, .stText, p, span, div {
+        color: inherit !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -246,10 +290,11 @@ def display_shareholding_pattern(stock_data):
         # Display pie chart visualization using text (since we can't use real charts)
         st.markdown("""
         <div style="
-            background: white;
+            background: rgba(255, 255, 255, 0.1);
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
         ">
             <div style="text-align: center; margin-bottom: 15px;">
                 <div style="
@@ -264,7 +309,7 @@ def display_shareholding_pattern(stock_data):
                     margin: 0 auto;
                 "></div>
             </div>
-            <div style="font-size: 12px; color: #333;">
+            <div style="font-size: 12px; color: inherit;">
                 <div style="margin: 5px 0;"><span style="color: #3f51b5;">■</span> Promoter</div>
                 <div style="margin: 5px 0;"><span style="color: #4caf50;">■</span> Institutional</div>
                 <div style="margin: 5px 0;"><span style="color: #ff9800;">■</span> Public</div>
@@ -284,45 +329,48 @@ def display_shareholding_pattern(stock_data):
         with col_a:
             st.markdown(f"""
             <div style="
-                background: white;
+                background: rgba(63, 81, 181, 0.1);
                 padding: 15px;
                 border-radius: 8px;
                 border-left: 4px solid #3f51b5;
                 box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                 margin-bottom: 10px;
+                backdrop-filter: blur(10px);
             ">
-                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Promoter (%)</div>
-                <div style="color: #333; font-size: 20px; font-weight: 600;">{'%.2f' % promoter if promoter else 'N/A'}</div>
+                <div style="color: inherit; opacity: 0.8; font-size: 12px; margin-bottom: 5px;">Promoter (%)</div>
+                <div style="color: inherit; font-size: 20px; font-weight: 600;">{'%.2f' % promoter if promoter else 'N/A'}</div>
             </div>
             """, unsafe_allow_html=True)
         
         with col_b:
             st.markdown(f"""
             <div style="
-                background: white;
+                background: rgba(76, 175, 80, 0.1);
                 padding: 15px;
                 border-radius: 8px;
                 border-left: 4px solid #4caf50;
                 box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                 margin-bottom: 10px;
+                backdrop-filter: blur(10px);
             ">
-                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">FII (%)</div>
-                <div style="color: #333; font-size: 20px; font-weight: 600;">{'%.2f' % stock_data.get('fii_holding', 0) if stock_data.get('fii_holding') else 'N/A'}</div>
+                <div style="color: inherit; opacity: 0.8; font-size: 12px; margin-bottom: 5px;">FII (%)</div>
+                <div style="color: inherit; font-size: 20px; font-weight: 600;">{'%.2f' % stock_data.get('fii_holding', 0) if stock_data.get('fii_holding') else 'N/A'}</div>
             </div>
             """, unsafe_allow_html=True)
         
         with col_c:
             st.markdown(f"""
             <div style="
-                background: white;
+                background: rgba(255, 152, 0, 0.1);
                 padding: 15px;
                 border-radius: 8px;
                 border-left: 4px solid #ff9800;
                 box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                 margin-bottom: 10px;
+                backdrop-filter: blur(10px);
             ">
-                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">DII (%)</div>
-                <div style="color: #333; font-size: 20px; font-weight: 600;">{'%.2f' % stock_data.get('dii_holding', 0) if stock_data.get('dii_holding') else 'N/A'}</div>
+                <div style="color: inherit; opacity: 0.8; font-size: 12px; margin-bottom: 5px;">DII (%)</div>
+                <div style="color: inherit; font-size: 20px; font-weight: 600;">{'%.2f' % stock_data.get('dii_holding', 0) if stock_data.get('dii_holding') else 'N/A'}</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -360,13 +408,14 @@ def display_ai_summary_tab(stock_data, gemini_analysis=None):
             if implications:
                 st.markdown(f"""
                 <div style="
-                    background: #f8f9fa;
+                    background: rgba(72, 187, 120, 0.1);
                     padding: 20px;
                     border-left: 4px solid #28a745;
                     border-radius: 5px;
                     margin-bottom: 20px;
+                    color: inherit;
                 ">
-                    {implications}
+                    <div style="color: inherit; line-height: 1.6;">{implications}</div>
                 </div>
                 """, unsafe_allow_html=True)
             else:
@@ -379,14 +428,15 @@ def display_ai_summary_tab(stock_data, gemini_analysis=None):
                 for i, insight in enumerate(insights, 1):
                     st.markdown(f"""
                     <div style="
-                        background: white;
+                        background: rgba(0, 123, 255, 0.1);
                         padding: 15px;
                         margin: 10px 0;
                         border-left: 4px solid #007bff;
                         border-radius: 5px;
                         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        color: inherit;
                     ">
-                        <strong>Insight {i}:</strong> {insight}
+                        <div style="color: inherit;"><strong>Insight {i}:</strong> {insight}</div>
                     </div>
                     """, unsafe_allow_html=True)
             else:
@@ -402,16 +452,17 @@ def display_ai_summary_tab(stock_data, gemini_analysis=None):
             pe_color = "#4CAF50" if pe_ratio and pe_ratio < 25 else "#FF9800" if pe_ratio and pe_ratio < 35 else "#f44336"
             st.markdown(f"""
             <div style="
-                background: white;
+                background: rgba(255, 255, 255, 0.1);
                 padding: 15px;
                 border-radius: 8px;
                 border-left: 4px solid {pe_color};
                 box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                 text-align: center;
                 margin-bottom: 10px;
+                backdrop-filter: blur(10px);
             ">
-                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">P/E Ratio</div>
-                <div style="color: #333; font-size: 24px; font-weight: 600;">{'%.2f' % pe_ratio if pe_ratio else 'N/A'}</div>
+                <div style="color: inherit; opacity: 0.8; font-size: 12px; margin-bottom: 5px;">P/E Ratio</div>
+                <div style="color: inherit; font-size: 24px; font-weight: 600;">{'%.2f' % pe_ratio if pe_ratio else 'N/A'}</div>
             </div>
             """, unsafe_allow_html=True)
         
@@ -420,16 +471,17 @@ def display_ai_summary_tab(stock_data, gemini_analysis=None):
             de_color = "#4CAF50" if debt_equity and debt_equity < 0.5 else "#FF9800" if debt_equity and debt_equity < 1.0 else "#f44336"
             st.markdown(f"""
             <div style="
-                background: white;
+                background: rgba(255, 255, 255, 0.1);
                 padding: 15px;
                 border-radius: 8px;
                 border-left: 4px solid {de_color};
                 box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                 text-align: center;
                 margin-bottom: 10px;
+                backdrop-filter: blur(10px);
             ">
-                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Debt/Equity</div>
-                <div style="color: #333; font-size: 24px; font-weight: 600;">{'%.2f' % debt_equity if debt_equity else 'N/A'}</div>
+                <div style="color: inherit; opacity: 0.8; font-size: 12px; margin-bottom: 5px;">Debt/Equity</div>
+                <div style="color: inherit; font-size: 24px; font-weight: 600;">{'%.2f' % debt_equity if debt_equity else 'N/A'}</div>
             </div>
             """, unsafe_allow_html=True)
         
@@ -438,16 +490,17 @@ def display_ai_summary_tab(stock_data, gemini_analysis=None):
             roe_color = "#4CAF50" if roe and roe > 15 else "#FF9800" if roe and roe > 10 else "#f44336"
             st.markdown(f"""
             <div style="
-                background: white;
+                background: rgba(255, 255, 255, 0.1);
                 padding: 15px;
                 border-radius: 8px;
                 border-left: 4px solid {roe_color};
                 box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                 text-align: center;
                 margin-bottom: 10px;
+                backdrop-filter: blur(10px);
             ">
-                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">ROE (%)</div>
-                <div style="color: #333; font-size: 24px; font-weight: 600;">{'%.2f' % (roe * 100) if roe else 'N/A'}</div>
+                <div style="color: inherit; opacity: 0.8; font-size: 12px; margin-bottom: 5px;">ROE (%)</div>
+                <div style="color: inherit; font-size: 24px; font-weight: 600;">{'%.2f' % (roe * 100) if roe else 'N/A'}</div>
             </div>
             """, unsafe_allow_html=True)
         
@@ -456,16 +509,17 @@ def display_ai_summary_tab(stock_data, gemini_analysis=None):
             growth_color = "#4CAF50" if revenue_growth and revenue_growth > 10 else "#FF9800" if revenue_growth and revenue_growth > 0 else "#f44336"
             st.markdown(f"""
             <div style="
-                background: white;
+                background: rgba(255, 255, 255, 0.1);
                 padding: 15px;
                 border-radius: 8px;
                 border-left: 4px solid {growth_color};
                 box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                 text-align: center;
                 margin-bottom: 10px;
+                backdrop-filter: blur(10px);
             ">
-                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Revenue Growth (%)</div>
-                <div style="color: #333; font-size: 24px; font-weight: 600;">{'%.2f' % (revenue_growth * 100) if revenue_growth else 'N/A'}</div>
+                <div style="color: inherit; opacity: 0.8; font-size: 12px; margin-bottom: 5px;">Revenue Growth (%)</div>
+                <div style="color: inherit; font-size: 24px; font-weight: 600;">{'%.2f' % (revenue_growth * 100) if revenue_growth else 'N/A'}</div>
             </div>
             """, unsafe_allow_html=True)
         
@@ -542,14 +596,15 @@ def display_ai_summary_tab(stock_data, gemini_analysis=None):
             if detailed_analysis:
                 st.markdown(f"""
                 <div style="
-                    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                    background: rgba(108, 117, 125, 0.1);
                     padding: 25px;
                     border-radius: 10px;
                     margin: 20px 0;
                     border-left: 4px solid #6c757d;
+                    backdrop-filter: blur(10px);
                 ">
-                    <h4 style="color: #333; margin-top: 0;">AI-Generated Investment Summary:</h4>
-                    <p style="color: #555; line-height: 1.6; margin-bottom: 0;">{detailed_analysis}</p>
+                    <h4 style="color: inherit; margin-top: 0; opacity: 0.9;">AI-Generated Investment Summary:</h4>
+                    <p style="color: inherit; line-height: 1.6; margin-bottom: 0; opacity: 0.8;">{detailed_analysis}</p>
                 </div>
                 """, unsafe_allow_html=True)
             else:
@@ -584,15 +639,16 @@ def display_ai_summary_tab(stock_data, gemini_analysis=None):
         
         st.markdown(f"""
         <div style="
-            background: white;
+            background: rgba(255, 255, 255, 0.1);
             padding: 20px;
             border-radius: 8px;
             border-left: 4px solid {risk_color};
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin: 20px 0;
+            backdrop-filter: blur(10px);
         ">
             <h4 style="color: {risk_color}; margin-top: 0;">Risk Level: {risk_level}</h4>
-            {"".join([f"<p style='margin: 5px 0; color: #555;'>• {factor}</p>" for factor in risk_factors])}
+            {"".join([f"<p style='margin: 5px 0; color: inherit; opacity: 0.8;'>• {factor}</p>" for factor in risk_factors])}
         </div>
         """, unsafe_allow_html=True)
     
@@ -755,7 +811,9 @@ def display_detailed_analysis(stock_data, gemini_analysis=None):
             annual_data = stock_data.get('annual_data')
             if annual_data is not None and not annual_data.empty:
                 st.markdown("**Annual Performance (Last 3 Years)**")
-                st.dataframe(annual_data.head(3), use_container_width=True)
+                # Clean the dataframe to avoid Arrow conversion errors
+                clean_annual = clean_dataframe_for_display(annual_data.head(3))
+                st.dataframe(clean_annual, use_container_width=True, hide_index=True)
             else:
                 st.info("Annual financial data not available")
         
@@ -763,7 +821,9 @@ def display_detailed_analysis(stock_data, gemini_analysis=None):
             quarterly_data = stock_data.get('quarterly_data')
             if quarterly_data is not None and not quarterly_data.empty:
                 st.markdown("**Quarterly Performance (Recent)**")
-                st.dataframe(quarterly_data.head(4), use_container_width=True)
+                # Clean the dataframe to avoid Arrow conversion errors
+                clean_quarterly = clean_dataframe_for_display(quarterly_data.head(4))
+                st.dataframe(clean_quarterly, use_container_width=True, hide_index=True)
             else:
                 st.info("Quarterly financial data not available")
     
