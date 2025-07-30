@@ -180,15 +180,16 @@ def display_dashboard_overview(stock_data):
         roe_color = "#4CAF50" if roe and roe > 15 else "#FF9800" if roe and roe > 10 else "#f44336"
         st.markdown(f"""
         <div style="
-            background: white;
+            background: rgba(76, 175, 80, 0.1);
             padding: 15px;
             border-radius: 8px;
             border-left: 4px solid {roe_color};
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 10px;
+            backdrop-filter: blur(10px);
         ">
-            <div style="color: #666; font-size: 12px; margin-bottom: 5px;">ROE (%)</div>
-            <div style="color: #333; font-size: 20px; font-weight: 600;">{'%.2f' % roe if roe else 'N/A'}</div>
+            <div style="color: inherit; opacity: 0.8; font-size: 12px; margin-bottom: 5px;">ROE (%)</div>
+            <div style="color: inherit; font-size: 20px; font-weight: 600;">{'%.2f' % roe if roe else 'N/A'}</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -196,15 +197,16 @@ def display_dashboard_overview(stock_data):
         roce = stock_data.get('roce', 0)
         st.markdown(f"""
         <div style="
-            background: white;
+            background: rgba(33, 150, 243, 0.1);
             padding: 15px;
             border-radius: 8px;
             border-left: 4px solid #2196F3;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 10px;
+            backdrop-filter: blur(10px);
         ">
-            <div style="color: #666; font-size: 12px; margin-bottom: 5px;">ROCE (%)</div>
-            <div style="color: #333; font-size: 20px; font-weight: 600;">{'%.2f' % roce if roce else 'N/A'}</div>
+            <div style="color: inherit; opacity: 0.8; font-size: 12px; margin-bottom: 5px;">ROCE (%)</div>
+            <div style="color: inherit; font-size: 20px; font-weight: 600;">{'%.2f' % roce if roce else 'N/A'}</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -212,15 +214,16 @@ def display_dashboard_overview(stock_data):
         eps = stock_data.get('eps', 0)
         st.markdown(f"""
         <div style="
-            background: white;
+            background: rgba(156, 39, 176, 0.1);
             padding: 15px;
             border-radius: 8px;
             border-left: 4px solid #9C27B0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 10px;
+            backdrop-filter: blur(10px);
         ">
-            <div style="color: #666; font-size: 12px; margin-bottom: 5px;">EPS (₹)</div>
-            <div style="color: #333; font-size: 20px; font-weight: 600;">{'%.2f' % eps if eps else 'N/A'}</div>
+            <div style="color: inherit; opacity: 0.8; font-size: 12px; margin-bottom: 5px;">EPS (₹)</div>
+            <div style="color: inherit; font-size: 20px; font-weight: 600;">{'%.2f' % eps if eps else 'N/A'}</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -229,15 +232,16 @@ def display_dashboard_overview(stock_data):
         de_color = "#4CAF50" if debt_equity and debt_equity < 0.5 else "#FF9800" if debt_equity and debt_equity < 1.0 else "#f44336"
         st.markdown(f"""
         <div style="
-            background: white;
+            background: rgba(255, 255, 255, 0.1);
             padding: 15px;
             border-radius: 8px;
             border-left: 4px solid {de_color};
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 10px;
+            backdrop-filter: blur(10px);
         ">
-            <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Debt/Equity</div>
-            <div style="color: #333; font-size: 20px; font-weight: 600;">{'%.2f' % debt_equity if debt_equity else 'N/A'}</div>
+            <div style="color: inherit; opacity: 0.8; font-size: 12px; margin-bottom: 5px;">Debt/Equity</div>
+            <div style="color: inherit; font-size: 20px; font-weight: 600;">{'%.2f' % debt_equity if debt_equity else 'N/A'}</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -246,15 +250,16 @@ def display_dashboard_overview(stock_data):
         cr_color = "#4CAF50" if current_ratio and current_ratio > 1.5 else "#FF9800" if current_ratio and current_ratio > 1.0 else "#f44336"
         st.markdown(f"""
         <div style="
-            background: white;
+            background: rgba(255, 87, 34, 0.1);
             padding: 15px;
             border-radius: 8px;
             border-left: 4px solid {cr_color};
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 10px;
+            backdrop-filter: blur(10px);
         ">
-            <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Current Ratio</div>
-            <div style="color: #333; font-size: 20px; font-weight: 600;">{'%.2f' % current_ratio if current_ratio else 'N/A'}</div>
+            <div style="color: inherit; opacity: 0.8; font-size: 12px; margin-bottom: 5px;">Current Ratio</div>
+            <div style="color: inherit; font-size: 20px; font-weight: 600;">{'%.2f' % current_ratio if current_ratio else 'N/A'}</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -263,15 +268,16 @@ def display_dashboard_overview(stock_data):
         growth_color = "#4CAF50" if net_sales_growth and net_sales_growth > 0 else "#f44336"
         st.markdown(f"""
         <div style="
-            background: white;
+            background: rgba(255, 255, 255, 0.1);
             padding: 15px;
             border-radius: 8px;
             border-left: 4px solid {growth_color};
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 10px;
+            backdrop-filter: blur(10px);
         ">
-            <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Net Sales Growth (%)</div>
-            <div style="color: #333; font-size: 20px; font-weight: 600;">{'%.2f' % net_sales_growth if net_sales_growth else 'N/A'}</div>
+            <div style="color: inherit; opacity: 0.8; font-size: 12px; margin-bottom: 5px;">Net Sales Growth (%)</div>
+            <div style="color: inherit; font-size: 20px; font-weight: 600;">{'%.2f' % net_sales_growth if net_sales_growth else 'N/A'}</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -659,7 +665,7 @@ def display_ai_summary_tab(stock_data, gemini_analysis=None):
     col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
-        if st.button("📸 Save Summary as Image", key="save_summary_image", use_container_width=True):
+        if st.button("📸 Save Summary as Image", key=f"save_summary_image_{company_name.replace(' ', '_')}", use_container_width=True):
             # Get variables safely
             implications_text = gemini_analysis.get('investor_implications', '') if gemini_analysis else 'Analysis in progress...'
             insights_list = gemini_analysis.get('key_insights', []) if gemini_analysis else []
@@ -1301,7 +1307,8 @@ def main():
     user_input = st.chat_input("Ask about any Indian stock (e.g., 'Analyze TCS', 'Tell me about Reliance')")
     
     if user_input:
-        # Clear previous analysis when new stock is searched
+        # Clear all previous data for single stock analysis at a time
+        st.session_state.chat_history = []
         st.session_state.current_stock_data = None
         st.session_state.current_analysis = None
         st.session_state.current_gemini_analysis = None
@@ -1373,6 +1380,29 @@ def main():
             st.session_state.current_stock_data = None
             st.session_state.current_analysis = None
             st.rerun()
+    
+    # Add disclaimer at the bottom visible in all tabs
+    st.markdown("---")
+    st.markdown("""
+    <div style="
+        background: rgba(255, 193, 7, 0.1);
+        padding: 20px;
+        border-radius: 8px;
+        border-left: 4px solid #ffc107;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin: 20px 0;
+        text-align: center;
+        backdrop-filter: blur(10px);
+    ">
+        <h4 style="color: #856404; margin-top: 0;">⚠️ Important Disclaimer</h4>
+        <p style="color: inherit; margin: 10px 0; line-height: 1.6; opacity: 0.8;">
+            <strong>This data is AI-generated and may not be completely accurate.</strong><br>
+            All financial information and analysis are for educational purposes only.<br>
+            Please consult your financial advisor before making any investment decisions.<br>
+            Past performance does not guarantee future results.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
