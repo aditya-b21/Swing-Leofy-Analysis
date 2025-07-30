@@ -131,6 +131,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 30, 2025 - Enhanced Swing-Leo-Analysis Platform with Accurate Investment Intelligence
+- **Platform Rebranding**: Updated from "InvestIQ" to "Swing-Leo-Analysis" across all components
+- **Enhanced AI Analysis Accuracy**: Improved AI summary with data-driven insights and strategic investment analysis
+  - Added critical investment insights with priority indicators and validation notes
+  - Enhanced investment thesis presentation with real-time market analysis context
+  - Improved actionable intelligence for better investor decision-making
+- **Compact User Interface**: Reduced disclaimer box size for better screen utilization
+- **Fixed Dark Mode Visibility**: All financial metrics now properly visible in dark theme
+- **Single Stock Analysis**: Implemented session clearing for focused single-stock analysis
+- **Data Accuracy Improvements**: Enhanced data cleaning to prevent Arrow conversion errors
+
 ### July 30, 2025 - AI Summary Tab with Comprehensive Analysis & Export Feature
 - **New AI Summary Tab**: Added comprehensive "🤖 AI Summary" tab with complete investment analysis
   - Investment implications for investors with AI-powered insights

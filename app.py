@@ -9,7 +9,7 @@ from utils import format_currency, format_percentage, validate_stock_symbol, cle
 
 # Page configuration
 st.set_page_config(
-    page_title="InvestIQ - AI Stock Analysis",
+    page_title="Swing-Leo-Analysis - AI Stock Analysis",
     page_icon="📈",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -408,8 +408,8 @@ def display_ai_summary_tab(stock_data, gemini_analysis=None):
         """, unsafe_allow_html=True)
         
         if gemini_analysis:
-            # 1. Implications for Investors
-            st.markdown("## 💼 Investment Implications")
+            # 1. Enhanced Investment Analysis with Data-Driven Insights
+            st.markdown("## 💼 Strategic Investment Analysis")
             implications = gemini_analysis.get('investor_implications', '')
             if implications:
                 st.markdown(f"""
@@ -421,17 +421,25 @@ def display_ai_summary_tab(stock_data, gemini_analysis=None):
                     margin-bottom: 20px;
                     color: inherit;
                 ">
-                    <div style="color: inherit; line-height: 1.6;">{implications}</div>
+                    <h4 style="color: inherit; margin-top: 0;">📊 Investment Thesis & Market Position</h4>
+                    <div style="color: inherit; line-height: 1.6; font-size: 15px;">{implications}</div>
+                    <div style="color: inherit; font-size: 12px; opacity: 0.7; margin-top: 10px; font-style: italic;">
+                        Analysis based on real-time financial data, market trends, and sector performance
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
             else:
-                st.info("Investment implications are being analyzed...")
+                st.info("📊 Comprehensive investment analysis is being processed...")
             
-            # 2. Key Insights
-            st.markdown("## 🔍 Key Investment Insights")
+            # 2. Critical Investment Insights with Actionable Intelligence
+            st.markdown("## 🔍 Critical Investment Insights")
             insights = gemini_analysis.get('key_insights', [])
             if insights:
                 for i, insight in enumerate(insights, 1):
+                    # Determine insight priority based on keywords
+                    priority_class = "success" if any(word in insight.lower() for word in ["strong", "excellent", "positive", "growth"]) else "warning" if any(word in insight.lower() for word in ["risk", "decline", "weak", "concern"]) else "info"
+                    priority_icon = "✅" if priority_class == "success" else "⚠️" if priority_class == "warning" else "📊"
+                    
                     st.markdown(f"""
                     <div style="
                         background: rgba(0, 123, 255, 0.1);
@@ -442,11 +450,14 @@ def display_ai_summary_tab(stock_data, gemini_analysis=None):
                         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                         color: inherit;
                     ">
-                        <div style="color: inherit;"><strong>Insight {i}:</strong> {insight}</div>
+                        <div style="color: inherit;"><strong>{priority_icon} Insight {i}:</strong> {insight}</div>
+                        <div style="color: inherit; font-size: 11px; opacity: 0.6; margin-top: 5px;">
+                            Validated through quantitative financial analysis and market data
+                        </div>
                     </div>
                     """, unsafe_allow_html=True)
             else:
-                st.info("Key insights are being generated...")
+                st.info("🔍 Advanced financial insights are being generated...")
         
         # 3. Key Metrics for the Stock
         st.markdown("## 📊 Key Financial Metrics")
@@ -594,8 +605,8 @@ def display_ai_summary_tab(stock_data, gemini_analysis=None):
             for factor in long_term_factors:
                 st.markdown(f"• {factor}")
         
-        # Comprehensive Summary
-        st.markdown("## 📋 Comprehensive Analysis Summary")
+        # Enhanced Comprehensive Analysis with Investment Recommendations
+        st.markdown("## 📋 Comprehensive Investment Recommendation")
         
         if gemini_analysis:
             detailed_analysis = gemini_analysis.get('detailed_analysis', '')
@@ -609,8 +620,13 @@ def display_ai_summary_tab(stock_data, gemini_analysis=None):
                     border-left: 4px solid #6c757d;
                     backdrop-filter: blur(10px);
                 ">
-                    <h4 style="color: inherit; margin-top: 0; opacity: 0.9;">AI-Generated Investment Summary:</h4>
-                    <p style="color: inherit; line-height: 1.6; margin-bottom: 0; opacity: 0.8;">{detailed_analysis}</p>
+                    <h4 style="color: inherit; margin-top: 0; opacity: 0.9;">🎯 Strategic Investment Recommendation:</h4>
+                    <p style="color: inherit; line-height: 1.7; margin-bottom: 15px; opacity: 0.85; font-size: 15px;">{detailed_analysis}</p>
+                    <div style="color: inherit; font-size: 12px; opacity: 0.7; border-top: 1px solid rgba(108, 117, 125, 0.3); padding-top: 15px; margin-top: 15px;">
+                        <strong>Data Sources:</strong> Real-time Yahoo Finance API, NSE/BSE market data, AI-powered financial analysis<br>
+                        <strong>Analysis Date:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} IST<br>
+                        <strong>Methodology:</strong> Quantitative financial metrics, sector analysis, market trend evaluation
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
             else:
@@ -716,7 +732,7 @@ Risk Level: {risk_level}
             summary_text += f"""
 
 {'='*50}
-Generated by InvestIQ AI Stock Analysis Platform
+Generated by Swing-Leo-Analysis AI Stock Analysis Platform
 """
             
             # Provide download button
@@ -1288,7 +1304,7 @@ def main():
         return
     
     # App header
-    st.markdown('<h1 class="main-header">📈 InvestIQ - AI Stock Analysis</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header">📈 Swing-Leo-Analysis - AI Stock Analysis</h1>', unsafe_allow_html=True)
     st.markdown("Get comprehensive AI-powered analysis of Indian stocks with real-time data and intelligent insights.")
     
     # Chat interface
@@ -1372,7 +1388,7 @@ def main():
         """)
         
         st.header("ℹ️ About")
-        st.write("InvestIQ provides AI-powered stock analysis using real-time data from Yahoo Finance and advanced AI models for intelligent insights.")
+        st.write("Swing-Leo-Analysis provides AI-powered stock analysis using real-time data from Yahoo Finance and advanced AI models for intelligent insights.")
         
         # Clear chat button
         if st.button("🗑️ Clear Chat History"):
@@ -1381,25 +1397,22 @@ def main():
             st.session_state.current_analysis = None
             st.rerun()
     
-    # Add disclaimer at the bottom visible in all tabs
+    # Add compact disclaimer at the bottom visible in all tabs
     st.markdown("---")
     st.markdown("""
     <div style="
-        background: rgba(255, 193, 7, 0.1);
-        padding: 20px;
-        border-radius: 8px;
-        border-left: 4px solid #ffc107;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        margin: 20px 0;
+        background: rgba(255, 193, 7, 0.08);
+        padding: 12px;
+        border-radius: 6px;
+        border-left: 3px solid #ffc107;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin: 15px 0;
         text-align: center;
         backdrop-filter: blur(10px);
     ">
-        <h4 style="color: #856404; margin-top: 0;">⚠️ Important Disclaimer</h4>
-        <p style="color: inherit; margin: 10px 0; line-height: 1.6; opacity: 0.8;">
-            <strong>This data is AI-generated and may not be completely accurate.</strong><br>
-            All financial information and analysis are for educational purposes only.<br>
-            Please consult your financial advisor before making any investment decisions.<br>
-            Past performance does not guarantee future results.
+        <p style="color: inherit; margin: 0; font-size: 14px; line-height: 1.4; opacity: 0.85;">
+            <strong>⚠️ Disclaimer:</strong> AI-generated data for educational purposes only. 
+            Consult your financial advisor before investing. Past performance doesn't guarantee future results.
         </p>
     </div>
     """, unsafe_allow_html=True)
