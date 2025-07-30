@@ -131,6 +131,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 30, 2025 - AI Summary Tab with Comprehensive Analysis & Export Feature
+- **New AI Summary Tab**: Added comprehensive "🤖 AI Summary" tab with complete investment analysis
+  - Investment implications for investors with AI-powered insights
+  - Key investment insights with structured presentation
+  - Key financial metrics dashboard with color-coded indicators
+  - Short-term (3-6 months) and long-term (1-3 years) investment outlook
+  - Comprehensive analysis summary from Gemini AI
+  - Risk assessment with automated risk level calculation
+  - Save summary as downloadable text report feature
+- **Enhanced Visual Design**: Professional gradient headers and color-coded risk indicators
+- **Export Functionality**: Complete investment summary export as text file for offline analysis
+- **Smart Risk Assessment**: Automated risk level calculation based on financial metrics
+- **Investment Outlook Analysis**: Automated positive/mixed/cautious ratings for different time horizons
+
 ### January 29, 2025 - Google Gemini Integration & Advanced Analysis Tabs
 - **Google Gemini AI Integration**: Integrated Google Gemini API for comprehensive stock analysis
   - Added detailed AI-powered insights using user's Gemini API key

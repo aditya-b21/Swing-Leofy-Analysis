@@ -326,17 +326,361 @@ def display_shareholding_pattern(stock_data):
             </div>
             """, unsafe_allow_html=True)
 
+def display_ai_summary_tab(stock_data, gemini_analysis=None):
+    """Display comprehensive AI Summary with all requested features"""
+    st.markdown("# 🤖 AI Investment Summary & Analysis")
+    
+    company_name = stock_data.get('company_name', 'Unknown Company')
+    current_price = stock_data.get('current_price', 0)
+    
+    # Create a container for the summary that can be saved as image
+    summary_container = st.container()
+    
+    with summary_container:
+        # Header section with key company info
+        st.markdown(f"""
+        <div style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        ">
+            <h2 style="margin: 0; color: white;">{company_name}</h2>
+            <h3 style="margin: 5px 0; color: #f0f0f0;">Current Price: ₹{current_price:,.2f}</h3>
+            <p style="margin: 0; color: #e0e0e0;">AI-Powered Investment Analysis Report</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if gemini_analysis:
+            # 1. Implications for Investors
+            st.markdown("## 💼 Investment Implications")
+            implications = gemini_analysis.get('investor_implications', '')
+            if implications:
+                st.markdown(f"""
+                <div style="
+                    background: #f8f9fa;
+                    padding: 20px;
+                    border-left: 4px solid #28a745;
+                    border-radius: 5px;
+                    margin-bottom: 20px;
+                ">
+                    {implications}
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.info("Investment implications are being analyzed...")
+            
+            # 2. Key Insights
+            st.markdown("## 🔍 Key Investment Insights")
+            insights = gemini_analysis.get('key_insights', [])
+            if insights:
+                for i, insight in enumerate(insights, 1):
+                    st.markdown(f"""
+                    <div style="
+                        background: white;
+                        padding: 15px;
+                        margin: 10px 0;
+                        border-left: 4px solid #007bff;
+                        border-radius: 5px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    ">
+                        <strong>Insight {i}:</strong> {insight}
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.info("Key insights are being generated...")
+        
+        # 3. Key Metrics for the Stock
+        st.markdown("## 📊 Key Financial Metrics")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            pe_ratio = stock_data.get('pe_ratio', 0)
+            pe_color = "#4CAF50" if pe_ratio and pe_ratio < 25 else "#FF9800" if pe_ratio and pe_ratio < 35 else "#f44336"
+            st.markdown(f"""
+            <div style="
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                border-left: 4px solid {pe_color};
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                text-align: center;
+                margin-bottom: 10px;
+            ">
+                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">P/E Ratio</div>
+                <div style="color: #333; font-size: 24px; font-weight: 600;">{'%.2f' % pe_ratio if pe_ratio else 'N/A'}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            debt_equity = stock_data.get('debt_to_equity', 0)
+            de_color = "#4CAF50" if debt_equity and debt_equity < 0.5 else "#FF9800" if debt_equity and debt_equity < 1.0 else "#f44336"
+            st.markdown(f"""
+            <div style="
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                border-left: 4px solid {de_color};
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                text-align: center;
+                margin-bottom: 10px;
+            ">
+                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Debt/Equity</div>
+                <div style="color: #333; font-size: 24px; font-weight: 600;">{'%.2f' % debt_equity if debt_equity else 'N/A'}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            roe = stock_data.get('roe', 0)
+            roe_color = "#4CAF50" if roe and roe > 15 else "#FF9800" if roe and roe > 10 else "#f44336"
+            st.markdown(f"""
+            <div style="
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                border-left: 4px solid {roe_color};
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                text-align: center;
+                margin-bottom: 10px;
+            ">
+                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">ROE (%)</div>
+                <div style="color: #333; font-size: 24px; font-weight: 600;">{'%.2f' % (roe * 100) if roe else 'N/A'}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            revenue_growth = stock_data.get('revenue_growth', 0)
+            growth_color = "#4CAF50" if revenue_growth and revenue_growth > 10 else "#FF9800" if revenue_growth and revenue_growth > 0 else "#f44336"
+            st.markdown(f"""
+            <div style="
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                border-left: 4px solid {growth_color};
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                text-align: center;
+                margin-bottom: 10px;
+            ">
+                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">Revenue Growth (%)</div>
+                <div style="color: #333; font-size: 24px; font-weight: 600;">{'%.2f' % (revenue_growth * 100) if revenue_growth else 'N/A'}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Investment Outlook
+        st.markdown("## 🎯 Investment Outlook")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("### 📈 Short-term Outlook (3-6 months)")
+            
+            # Calculate short-term sentiment based on key metrics
+            short_term_factors = []
+            current_ratio = stock_data.get('current_ratio', 0)
+            if current_ratio and current_ratio > 1.5:
+                short_term_factors.append("✅ Strong liquidity position")
+            elif current_ratio and current_ratio > 1.0:
+                short_term_factors.append("⚠️ Adequate liquidity")
+            else:
+                short_term_factors.append("❌ Liquidity concerns")
+            
+            profit_margin = stock_data.get('profit_margins', 0)
+            if profit_margin and profit_margin > 0.15:
+                short_term_factors.append("✅ Strong profitability")
+            elif profit_margin and profit_margin > 0.05:
+                short_term_factors.append("⚠️ Moderate profitability")
+            else:
+                short_term_factors.append("❌ Low profitability")
+            
+            if pe_ratio and pe_ratio < 25:
+                short_term_factors.append("✅ Reasonable valuation")
+            elif pe_ratio and pe_ratio < 35:
+                short_term_factors.append("⚠️ Moderate valuation")
+            else:
+                short_term_factors.append("❌ High valuation")
+            
+            for factor in short_term_factors:
+                st.markdown(f"• {factor}")
+        
+        with col2:
+            st.markdown("### 🚀 Long-term Outlook (1-3 years)")
+            
+            # Calculate long-term sentiment
+            long_term_factors = []
+            if revenue_growth and revenue_growth > 0.1:
+                long_term_factors.append("✅ Strong revenue growth trend")
+            elif revenue_growth and revenue_growth > 0:
+                long_term_factors.append("⚠️ Moderate growth potential")
+            else:
+                long_term_factors.append("❌ Growth challenges")
+            
+            if debt_equity and debt_equity < 0.5:
+                long_term_factors.append("✅ Conservative debt management")
+            elif debt_equity and debt_equity < 1.0:
+                long_term_factors.append("⚠️ Manageable debt levels")
+            else:
+                long_term_factors.append("❌ High debt burden")
+            
+            if roe and roe > 0.15:
+                long_term_factors.append("✅ Excellent return on equity")
+            elif roe and roe > 0.10:
+                long_term_factors.append("⚠️ Good return on equity")
+            else:
+                long_term_factors.append("❌ Poor return on equity")
+            
+            for factor in long_term_factors:
+                st.markdown(f"• {factor}")
+        
+        # Comprehensive Summary
+        st.markdown("## 📋 Comprehensive Analysis Summary")
+        
+        if gemini_analysis:
+            detailed_analysis = gemini_analysis.get('detailed_analysis', '')
+            if detailed_analysis:
+                st.markdown(f"""
+                <div style="
+                    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                    padding: 25px;
+                    border-radius: 10px;
+                    margin: 20px 0;
+                    border-left: 4px solid #6c757d;
+                ">
+                    <h4 style="color: #333; margin-top: 0;">AI-Generated Investment Summary:</h4>
+                    <p style="color: #555; line-height: 1.6; margin-bottom: 0;">{detailed_analysis}</p>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.info("Detailed analysis is being generated...")
+        
+        # Risk Assessment
+        st.markdown("## ⚠️ Risk Assessment")
+        
+        risk_factors = []
+        risk_level = "Low"
+        
+        if debt_equity and debt_equity > 1.0:
+            risk_factors.append("High debt-to-equity ratio indicates financial leverage risk")
+            risk_level = "High"
+        
+        if pe_ratio and pe_ratio > 35:
+            risk_factors.append("High P/E ratio suggests overvaluation risk")
+            risk_level = "Medium" if risk_level == "Low" else "High"
+        
+        if current_ratio and current_ratio < 1.0:
+            risk_factors.append("Low current ratio indicates liquidity risk")
+            risk_level = "High"
+        
+        if profit_margin and profit_margin < 0.05:
+            risk_factors.append("Low profit margins indicate profitability challenges")
+            risk_level = "Medium" if risk_level == "Low" else "High"
+        
+        if not risk_factors:
+            risk_factors.append("No significant financial risks identified in current metrics")
+        
+        risk_color = "#4CAF50" if risk_level == "Low" else "#FF9800" if risk_level == "Medium" else "#f44336"
+        
+        st.markdown(f"""
+        <div style="
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid {risk_color};
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        ">
+            <h4 style="color: {risk_color}; margin-top: 0;">Risk Level: {risk_level}</h4>
+            {"".join([f"<p style='margin: 5px 0; color: #555;'>• {factor}</p>" for factor in risk_factors])}
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Save as Image functionality
+    st.markdown("---")
+    st.markdown("## 💾 Save Summary as Image")
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        if st.button("📸 Save Summary as Image", key="save_summary_image", use_container_width=True):
+            # Get variables safely
+            implications_text = gemini_analysis.get('investor_implications', '') if gemini_analysis else 'Analysis in progress...'
+            insights_list = gemini_analysis.get('key_insights', []) if gemini_analysis else []
+            detailed_analysis_text = gemini_analysis.get('detailed_analysis', '') if gemini_analysis else 'Detailed analysis is being generated...'
+            
+            # Create a comprehensive text summary for download
+            summary_text = f"""
+AI INVESTMENT SUMMARY REPORT
+{'='*50}
+
+Company: {company_name}
+Current Price: ₹{current_price:,.2f}
+Analysis Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+INVESTMENT IMPLICATIONS:
+{implications_text}
+
+KEY INSIGHTS:
+"""
+            
+            if insights_list:
+                for i, insight in enumerate(insights_list, 1):
+                    summary_text += f"{i}. {insight}\n"
+            else:
+                summary_text += "Insights are being generated...\n"
+            
+            summary_text += f"""
+
+KEY FINANCIAL METRICS:
+- P/E Ratio: {'%.2f' % pe_ratio if pe_ratio else 'N/A'}
+- Debt/Equity: {'%.2f' % debt_equity if debt_equity else 'N/A'}
+- ROE: {'%.2f%%' % (roe * 100) if roe else 'N/A'}
+- Revenue Growth: {'%.2f%%' % (revenue_growth * 100) if revenue_growth else 'N/A'}
+
+INVESTMENT OUTLOOK:
+Short-term (3-6 months): {"Positive" if len([f for f in short_term_factors if "✅" in f]) >= 2 else "Mixed" if len([f for f in short_term_factors if "✅" in f]) >= 1 else "Cautious"}
+Long-term (1-3 years): {"Positive" if len([f for f in long_term_factors if "✅" in f]) >= 2 else "Mixed" if len([f for f in long_term_factors if "✅" in f]) >= 1 else "Cautious"}
+
+COMPREHENSIVE ANALYSIS:
+{detailed_analysis_text}
+
+RISK ASSESSMENT:
+Risk Level: {risk_level}
+"""
+            for factor in risk_factors:
+                summary_text += f"• {factor}\n"
+            
+            summary_text += f"""
+
+{'='*50}
+Generated by InvestIQ AI Stock Analysis Platform
+"""
+            
+            # Provide download button
+            st.download_button(
+                label="📋 Download Complete Summary Report",
+                data=summary_text,
+                file_name=f"{company_name.replace(' ', '_')}_AI_Summary_{datetime.now().strftime('%Y%m%d')}.txt",
+                mime="text/plain",
+                use_container_width=True
+            )
+            
+            st.success("📊 Summary report ready for download! Click the button above to save the complete analysis.")
+            st.info("💡 Tip: You can also take a screenshot of this tab to save the visual summary as an image.")
+
 def display_detailed_analysis(stock_data, gemini_analysis=None):
     """Display detailed stock analysis in organized tabs"""
     # Create professional tab structure like reference image
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
         "Overview", 
         "Chart", 
         "Analysis",
         "P&L",
         "Balance Sheet",
         "Cash Flow", 
-        "Investors"
+        "Investors",
+        "🤖 AI Summary"
     ])
     
     with tab1:
@@ -723,6 +1067,10 @@ def display_detailed_analysis(stock_data, gemini_analysis=None):
                 st.info("Quarterly financial data not available for detailed analysis.")
         else:
             st.info("AI analysis and quarterly data being generated...")
+    
+    with tab8:
+        # Comprehensive AI Summary tab with all requested features
+        display_ai_summary_tab(stock_data, gemini_analysis)
         
         if gemini_analysis:
             # Key Insights Section
