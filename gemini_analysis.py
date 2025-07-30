@@ -1,9 +1,11 @@
 import os
 import json
+import os
+import google
 from typing import Dict, Any, List
 import pandas as pd
-from google import genai
-from google.genai import types
+import google.generativeai as genai
+from google.generativeai import types
 
 class GeminiStockAnalyzer:
     def __init__(self):
@@ -12,7 +14,7 @@ class GeminiStockAnalyzer:
         if not api_key:
             raise ValueError("GEMINI_API_KEY environment variable is required")
         
-        self.client = genai.Client(api_key=api_key)
+        genai.configure(api_key=api_key)
         self.model = "gemini-2.5-flash"
     
     def analyze_stock_comprehensive(self, stock_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -21,7 +23,7 @@ class GeminiStockAnalyzer:
             # Create detailed analysis prompt
             analysis_prompt = self._create_comprehensive_prompt(stock_data)
             
-            response = self.client.models.generate_content(
+            response = genai.GenerativeModel(self.model).generate_content(
                 model=self.model,
                 contents=analysis_prompt,
                 config=types.GenerateContentConfig(
